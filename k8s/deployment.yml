@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: time-record
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: time-record
+  template:
+    metadata:
+      labels:
+        app: time-record
+    spec:
+      containers:
+      - name: time-record
+        image: coding4u.azurecr.io/time-record-service
+        ports:
+        - name: grpc
+          containerPort: 50051
+        - name: rest
+          containerPort: 8080
+        envFrom:
+          - secretRef:
+              name: time-record-secret
+          - configMapRef:
+              name: time-record-conf
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+
+      imagePullSecrets:
+          - name: regcred

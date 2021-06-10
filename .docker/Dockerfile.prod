@@ -1,0 +1,15 @@
+FROM golang:1.16-alpine AS builder
+
+WORKDIR /go/src
+ENV PATH="/go/bin:${PATH}"
+ENV GO111MODULE=on
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+ENV GOARCH=amd64
+
+COPY . .
+RUN go build -o main .
+
+FROM scratch AS runtime
+COPY --from=builder /go/src/main /
+ENTRYPOINT ["./main", "all"]

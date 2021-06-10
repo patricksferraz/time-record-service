@@ -1,0 +1,289 @@
+basePath: /api/v1
+definitions:
+  rest.HTTPError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      error:
+        example: status bad request
+        type: string
+    type: object
+  rest.HTTPResponse:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: a message
+        type: string
+    type: object
+  rest.RefuseRequest:
+    properties:
+      refused_reason:
+        type: string
+    type: object
+  rest.TimeRecord:
+    properties:
+      approved_by:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      employee_id:
+        type: string
+      id:
+        type: string
+      refused_by:
+        type: string
+      refused_reason:
+        type: string
+      regular_time:
+        type: boolean
+      status:
+        type: integer
+      time:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - id
+    type: object
+  rest.TimeRecordRequest:
+    properties:
+      description:
+        type: string
+      time:
+        type: string
+    required:
+    - time
+    type: object
+info:
+  contact:
+    email: comercial@coding4u.com.br
+    name: Coding4u
+  description: Swagger API for Golang Project Time Record.
+  termsOfService: http://swagger.io/terms/
+  title: Time Record Swagger API
+  version: "1.0"
+paths:
+  /timeRecord:
+    get:
+      consumes:
+      - application/json
+      description: List the employee's time records
+      operationId: listTimeRecords
+      parameters:
+      - in: query
+        name: from_date
+        required: true
+        type: string
+      - in: query
+        name: to_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/rest.TimeRecord'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: list the employee's time records
+      tags:
+      - Time Record
+    post:
+      consumes:
+      - application/json
+      description: Router for registration a new time record
+      operationId: registerTimeRecord
+      parameters:
+      - description: JSON body for register a new time record
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/rest.TimeRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.TimeRecord'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: register a new time record
+      tags:
+      - Time Record
+  /timeRecord/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Router for find a time record
+      operationId: findTimeRecord
+      parameters:
+      - description: Time Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.TimeRecord'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: find a time record
+      tags:
+      - Time Record
+  /timeRecord/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Router for approve a pending time record
+      operationId: approveTimeRecord
+      parameters:
+      - description: Time Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.HTTPResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: approve a pending time record
+      tags:
+      - Time Record
+  /timeRecord/{id}/refuse:
+    post:
+      consumes:
+      - application/json
+      description: Router for refuse a pending time record
+      operationId: refuseTimeRecord
+      parameters:
+      - description: Time Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JSON body for refuse a pending time record
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/rest.RefuseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.HTTPResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: refuse a pending time record
+      tags:
+      - Time Record
+  /timeRecord/employee/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Search for employee time records by `id`
+      operationId: searchTimeRecords
+      parameters:
+      - description: Employee ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - in: query
+        name: from_date
+        required: true
+        type: string
+      - in: query
+        name: to_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/rest.TimeRecord'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/rest.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: search time records by employee id
+      tags:
+      - Time Record
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
