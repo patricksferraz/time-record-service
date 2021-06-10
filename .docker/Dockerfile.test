@@ -1,0 +1,7 @@
+FROM golang:1.16-alpine
+
+WORKDIR /test
+
+COPY . .
+
+RUN CGO_ENABLED=0 go test -v -cover ./...

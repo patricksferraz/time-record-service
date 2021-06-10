@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package dev.azure.com.c4ut.TimeClock;
+import "google/protobuf/timestamp.proto";
+
+option go_package = "/protofiles;pb";
+
+message RegisterTimeRecordRequest {
+    google.protobuf.Timestamp time = 1;
+    string description = 2;
+}
+
+message ApproveTimeRecordRequest {
+    string id = 1;
+}
+
+message RefuseTimeRecordRequest {
+    string id = 1;
+    string refused_reason = 2;
+}
+
+message StatusResponse {
+    string status = 1;
+    string error = 2;
+}
+
+message FindTimeRecordRequest {
+    string id = 1;
+}
+
+message SearchTimeRecordsRequest {
+    string employee_id = 1;
+    google.protobuf.Timestamp from_date = 2;
+    google.protobuf.Timestamp to_date = 3;
+    // int32 page_size = 4;
+    // string page_token = 5;
+}
+
+message ListTimeRecordsRequest {
+    google.protobuf.Timestamp from_date = 2;
+    google.protobuf.Timestamp to_date = 3;
+    // int32 page_size = 4;
+    // string page_token = 5;
+}
+
+message TimeRecord {
+    enum Status {
+        STATUS_UNSPECIFIED = 0;
+        PENDING = 1;
+		APPROVED = 2;
+        REFUSED = 3;
+    }
+
+    string id = 1;
+    google.protobuf.Timestamp time = 2;
+    Status status = 3;
+    string description = 4;
+    string refused_reason = 5;
+    bool regular_time = 6;
+    string employee_id = 7;
+    string approved_by = 8;
+    string refused_by = 9;
+    google.protobuf.Timestamp created_at = 10;
+    google.protobuf.Timestamp updated_at = 11;
+}
+
+// message ListTimeRecordsResponse {
+//     repeated TimeRecord time_records = 1;
+//     string next_page_token = 2;
+// }
+
+service TimeRecordService {
+    rpc RegisterTimeRecord (RegisterTimeRecordRequest) returns (TimeRecord);
+    rpc ApproveTimeRecord (ApproveTimeRecordRequest) returns (StatusResponse);
+    rpc RefuseTimeRecord (RefuseTimeRecordRequest) returns (StatusResponse);
+    rpc FindTimeRecord (FindTimeRecordRequest) returns (TimeRecord);
+    rpc SearchTimeRecords (SearchTimeRecordsRequest) returns (stream TimeRecord);
+    rpc ListTimeRecords (ListTimeRecordsRequest) returns (stream TimeRecord);
+}
