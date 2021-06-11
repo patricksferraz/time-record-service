@@ -31,45 +31,58 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var restPort int
-
 // restCmd represents the rest command
-var restCmd = &cobra.Command{
-	Use:   "rest",
-	Short: "Run rest Service",
+func restCmd() *cobra.Command {
+	var restPort int
+	var uri string
+	var dbName string
 
-	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.Background()
-		database, err := db.NewMongo(ctx, uri, dbName)
-		if err != nil {
-			log.Fatal(err)
-		}
+	restCmd := &cobra.Command{
+		Use:   "rest",
+		Short: "Run rest Service",
 
-		err = database.Test(ctx)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if utils.GetEnv("DB_MIGRATE", "false") == "true" {
-			err = database.Migrate()
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.Background()
+			database, err := db.NewMongo(ctx, uri, dbName)
 			if err != nil {
 				log.Fatal(err)
 			}
-		}
 
-		defer database.Close(ctx)
+			err = database.Test(ctx)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
-		conn, err := external.ConnectAuthService(authServiceAddr)
-		if err != nil {
-			log.Fatal(err)
-		}
+			if utils.GetEnv("DB_MIGRATE", "false") == "true" {
+				err = database.Migrate()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
 
-		defer conn.Close()
-		authdb := pb.NewAuthServiceClient(conn)
+			defer database.Close(ctx)
 
-		rest.StartRestServer(database, authdb, restPort)
-	},
+			authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
+			conn, err := external.ConnectAuthService(authServiceAddr)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			defer conn.Close()
+			authdb := pb.NewAuthServiceClient(conn)
+
+			rest.StartRestServer(database, authdb, restPort)
+		},
+	}
+
+	dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
+	dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+
+	restCmd.Flags().IntVarP(&restPort, "port", "p", 8080, "rest server port")
+	restCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
+	restCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
+
+	return restCmd
 }
 
 func init() {
@@ -83,8 +96,7 @@ func init() {
 		}
 	}
 
-	rootCmd.AddCommand(restCmd)
-	restCmd.Flags().IntVarP(&restPort, "port", "p", 8080, "rest server port")
+	rootCmd.AddCommand(restCmd())
 
 	// Here you will define your flags and configuration settings.
 

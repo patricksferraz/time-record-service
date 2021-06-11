@@ -19,77 +19,80 @@ import (
 	"context"
 	"errors"
 	"log"
-	"os"
-	"path/filepath"
-	"runtime"
 
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
 	_ "dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db/migrations"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/utils"
-	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	migrate "github.com/xakep666/mongo-migrate"
 )
 
-var n int
-
 // migrateCmd represents the migrate command
-var migrateCmd = &cobra.Command{
-	Use:   "migrate [up|down]",
-	Short: "A brief description of your command",
-	Args: func(cmd *cobra.Command, args []string) error {
+func migrateCmd() *cobra.Command {
+	var n int
+	var uri string
+	var dbName string
 
-		if len(args) < 1 {
-			return errors.New("requires up or down argument")
-		}
-		return nil
+	migrateCmd := &cobra.Command{
+		Use:   "migrate [up|down]",
+		Short: "A brief description of your command",
+		Args: func(cmd *cobra.Command, args []string) error {
 
-	},
-	Run: func(cmd *cobra.Command, args []string) {
+			if len(args) < 1 {
+				return errors.New("requires up or down argument")
+			}
+			return nil
 
-		ctx := context.Background()
-		db, err := db.NewMongo(ctx, uri, dbName)
-		if err != nil {
-			log.Fatal(err)
-		}
-		migrate.SetDatabase(db.Database)
+		},
+		Run: func(cmd *cobra.Command, args []string) {
 
-		switch args[0] {
-		case "up":
-			err = migrate.Up(n)
+			ctx := context.Background()
+			db, err := db.NewMongo(ctx, uri, dbName)
 			if err != nil {
 				log.Fatal(err)
 			}
-		case "down":
-			err = migrate.Down(n)
-			if err != nil {
-				log.Fatal(err)
+			migrate.SetDatabase(db.Database)
+
+			switch args[0] {
+			case "up":
+				err = migrate.Up(n)
+				if err != nil {
+					log.Fatal(err)
+				}
+			case "down":
+				err = migrate.Down(n)
+				if err != nil {
+					log.Fatal(err)
+				}
+			default:
+				log.Fatal("requires up or down argument")
 			}
-		default:
-			log.Fatal("requires up or down argument")
-		}
 
-	},
-}
-
-func init() {
-	_, b, _, _ := runtime.Caller(0)
-	basepath := filepath.Dir(b)
-
-	if os.Getenv("ENV") == "dev" {
-		err := godotenv.Load(basepath + "/../.env")
-		if err != nil {
-			log.Printf("Error loading .env files")
-		}
+		},
 	}
 
 	dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
 	dDbName := utils.GetEnv("DB_NAME", "time_record_service")
 
-	rootCmd.AddCommand(migrateCmd)
 	migrateCmd.Flags().IntVarP(&n, "n", "n", migrate.AllAvailable, "amount of migrations to UP or DOWN")
 	migrateCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "gRPC Server port")
 	migrateCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "gRPC Server port")
+
+	return migrateCmd
+}
+
+func init() {
+	// _, b, _, _ := runtime.Caller(0)
+	// basepath := filepath.Dir(b)
+
+	// if os.Getenv("ENV") == "dev" {
+	// 	err := godotenv.Load(basepath + "/../.env")
+	// 	if err != nil {
+	// 		log.Printf("Error loading .env files")
+	// 	}
+	// }
+
+	rootCmd.AddCommand(migrateCmd())
 
 	// Here you will define your flags and configuration settings.
 
