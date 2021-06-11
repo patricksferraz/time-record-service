@@ -31,47 +31,58 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var grpcPort int
-var uri string
-var dbName string
-
 // grpcCmd represents the grpc command
-var grpcCmd = &cobra.Command{
-	Use:   "grpc",
-	Short: "Run gRPC Service",
+func grpcCmd() *cobra.Command {
+	var grpcPort int
+	var uri string
+	var dbName string
 
-	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.Background()
-		database, err := db.NewMongo(ctx, uri, dbName)
-		if err != nil {
-			log.Fatal(err)
-		}
+	grpcCmd := &cobra.Command{
+		Use:   "grpc",
+		Short: "Run gRPC Service",
 
-		err = database.Test(ctx)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if utils.GetEnv("DB_MIGRATE", "false") == "true" {
-			err = database.Migrate()
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.Background()
+			database, err := db.NewMongo(ctx, uri, dbName)
 			if err != nil {
 				log.Fatal(err)
 			}
-		}
 
-		defer database.Close(ctx)
+			err = database.Test(ctx)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
-		conn, err := external.ConnectAuthService(authServiceAddr)
-		if err != nil {
-			log.Fatal(err)
-		}
+			if utils.GetEnv("DB_MIGRATE", "false") == "true" {
+				err = database.Migrate()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
 
-		defer conn.Close()
-		authdb := pb.NewAuthServiceClient(conn)
+			defer database.Close(ctx)
 
-		grpc.StartGrpcServer(database, authdb, grpcPort)
-	},
+			authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
+			conn, err := external.ConnectAuthService(authServiceAddr)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			defer conn.Close()
+			authdb := pb.NewAuthServiceClient(conn)
+
+			grpc.StartGrpcServer(database, authdb, grpcPort)
+		},
+	}
+
+	dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
+	dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+
+	grpcCmd.Flags().IntVarP(&grpcPort, "port", "p", 50051, "gRPC Server port")
+	grpcCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
+	grpcCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
+
+	return grpcCmd
 }
 
 func init() {
@@ -85,13 +96,7 @@ func init() {
 		}
 	}
 
-	dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	dDbName := utils.GetEnv("DB_NAME", "time_record_service")
-
-	rootCmd.AddCommand(grpcCmd)
-	grpcCmd.Flags().IntVarP(&grpcPort, "port", "p", 50051, "gRPC Server port")
-	grpcCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "gRPC Server port")
-	grpcCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "gRPC Server port")
+	rootCmd.AddCommand(grpcCmd())
 
 	// Here you will define your flags and configuration settings.
 

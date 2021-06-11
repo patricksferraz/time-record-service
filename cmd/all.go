@@ -19,6 +19,8 @@ import (
 	"context"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/grpc"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/grpc/pb"
@@ -26,53 +28,79 @@ import (
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/external"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/utils"
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
 // allCmd represents the all command
-var allCmd = &cobra.Command{
-	Use:   "all",
-	Short: "Run both gRPC and rest servers",
+func allCmd() *cobra.Command {
+	var grpcPort int
+	var uri string
+	var dbName string
+	var restPort int
 
-	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.Background()
-		database, err := db.NewMongo(ctx, uri, dbName)
-		if err != nil {
-			log.Fatal(err)
-		}
+	allCmd := &cobra.Command{
+		Use:   "all",
+		Short: "Run both gRPC and rest servers",
 
-		err = database.Test(ctx)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if utils.GetEnv("DB_MIGRATE", "false") == "true" {
-			err = database.Migrate()
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.Background()
+			database, err := db.NewMongo(ctx, uri, dbName)
 			if err != nil {
 				log.Fatal(err)
 			}
-		}
 
-		defer database.Close(ctx)
+			err = database.Test(ctx)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
-		conn, err := external.ConnectAuthService(authServiceAddr)
-		if err != nil {
-			log.Fatal(err)
-		}
+			if utils.GetEnv("DB_MIGRATE", "false") == "true" {
+				err = database.Migrate()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
 
-		defer conn.Close()
-		authdb := pb.NewAuthServiceClient(conn)
+			defer database.Close(ctx)
 
-		go rest.StartRestServer(database, authdb, restPort)
-		grpc.StartGrpcServer(database, authdb, grpcPort)
-	},
+			authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
+			conn, err := external.ConnectAuthService(authServiceAddr)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			defer conn.Close()
+			authdb := pb.NewAuthServiceClient(conn)
+
+			go rest.StartRestServer(database, authdb, restPort)
+			grpc.StartGrpcServer(database, authdb, grpcPort)
+		},
+	}
+
+	dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
+	dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+
+	allCmd.Flags().IntVarP(&grpcPort, "grpcPort", "g", 50051, "gRPC Server port")
+	allCmd.Flags().IntVarP(&restPort, "restPort", "r", 8080, "rest server port")
+	allCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
+	allCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
+
+	return allCmd
 }
 
 func init() {
-	rootCmd.AddCommand(allCmd)
-	allCmd.Flags().IntVarP(&grpcPort, "grpcPort", "g", 50051, "gRPC Server port")
-	allCmd.Flags().IntVarP(&restPort, "restPort", "r", 8080, "rest server port")
+	_, b, _, _ := runtime.Caller(0)
+	basepath := filepath.Dir(b)
+
+	if os.Getenv("ENV") == "dev" {
+		err := godotenv.Load(basepath + "/../.env")
+		if err != nil {
+			log.Printf("Error loading .env files")
+		}
+	}
+
+	rootCmd.AddCommand(allCmd())
 
 	// Here you will define your flags and configuration settings.
 
