@@ -13,7 +13,7 @@ message RefreshTokenRequest {
     string refresh_token = 1;
 }
 
-message FindEmployeeClaimsByTokenRequest {
+message FindClaimsByTokenRequest {
     string access_token = 1;
 }
 
@@ -29,13 +29,13 @@ message JWT {
     string scope = 9;
 }
 
-message EmployeeClaims {
-    string id = 1;
+message Claims {
+    string employee_id = 1;
     repeated string roles = 2;
 }
 
 service AuthService {
     rpc Login (LoginRequest) returns (JWT);
     rpc RefreshToken (RefreshTokenRequest) returns (JWT);
-    rpc FindEmployeeClaimsByToken (FindEmployeeClaimsByTokenRequest) returns (EmployeeClaims);
+    rpc FindClaimsByToken (FindClaimsByTokenRequest) returns (Claims);
 }

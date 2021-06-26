@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthServiceClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*JWT, error)
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*JWT, error)
-	FindEmployeeClaimsByToken(ctx context.Context, in *FindEmployeeClaimsByTokenRequest, opts ...grpc.CallOption) (*EmployeeClaims, error)
+	FindClaimsByToken(ctx context.Context, in *FindClaimsByTokenRequest, opts ...grpc.CallOption) (*Claims, error)
 }
 
 type authServiceClient struct {
@@ -49,9 +49,9 @@ func (c *authServiceClient) RefreshToken(ctx context.Context, in *RefreshTokenRe
 	return out, nil
 }
 
-func (c *authServiceClient) FindEmployeeClaimsByToken(ctx context.Context, in *FindEmployeeClaimsByTokenRequest, opts ...grpc.CallOption) (*EmployeeClaims, error) {
-	out := new(EmployeeClaims)
-	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.AuthService/FindEmployeeClaimsByToken", in, out, opts...)
+func (c *authServiceClient) FindClaimsByToken(ctx context.Context, in *FindClaimsByTokenRequest, opts ...grpc.CallOption) (*Claims, error) {
+	out := new(Claims)
+	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.AuthService/FindClaimsByToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (c *authServiceClient) FindEmployeeClaimsByToken(ctx context.Context, in *F
 type AuthServiceServer interface {
 	Login(context.Context, *LoginRequest) (*JWT, error)
 	RefreshToken(context.Context, *RefreshTokenRequest) (*JWT, error)
-	FindEmployeeClaimsByToken(context.Context, *FindEmployeeClaimsByTokenRequest) (*EmployeeClaims, error)
+	FindClaimsByToken(context.Context, *FindClaimsByTokenRequest) (*Claims, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -78,8 +78,8 @@ func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*JW
 func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshTokenRequest) (*JWT, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
 }
-func (UnimplementedAuthServiceServer) FindEmployeeClaimsByToken(context.Context, *FindEmployeeClaimsByTokenRequest) (*EmployeeClaims, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FindEmployeeClaimsByToken not implemented")
+func (UnimplementedAuthServiceServer) FindClaimsByToken(context.Context, *FindClaimsByTokenRequest) (*Claims, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindClaimsByToken not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
@@ -130,20 +130,20 @@ func _AuthService_RefreshToken_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_FindEmployeeClaimsByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FindEmployeeClaimsByTokenRequest)
+func _AuthService_FindClaimsByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindClaimsByTokenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServiceServer).FindEmployeeClaimsByToken(ctx, in)
+		return srv.(AuthServiceServer).FindClaimsByToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dev.azure.com.c4ut.TimeClock.AuthService/FindEmployeeClaimsByToken",
+		FullMethod: "/dev.azure.com.c4ut.TimeClock.AuthService/FindClaimsByToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).FindEmployeeClaimsByToken(ctx, req.(*FindEmployeeClaimsByTokenRequest))
+		return srv.(AuthServiceServer).FindClaimsByToken(ctx, req.(*FindClaimsByTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -164,8 +164,8 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_RefreshToken_Handler,
 		},
 		{
-			MethodName: "FindEmployeeClaimsByToken",
-			Handler:    _AuthService_FindEmployeeClaimsByToken_Handler,
+			MethodName: "FindClaimsByToken",
+			Handler:    _AuthService_FindClaimsByToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

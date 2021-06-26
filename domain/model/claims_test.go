@@ -11,7 +11,7 @@ import (
 
 func TestModel_NewEmployeeClaims(t *testing.T) {
 
-	id := uuid.NewV4().String()
+	employeeID := uuid.NewV4().String()
 	count := faker.Number().NumberInt(2)
 
 	var roles []string
@@ -19,12 +19,12 @@ func TestModel_NewEmployeeClaims(t *testing.T) {
 		roles = append(roles, faker.Lorem().Word())
 	}
 
-	employeeClaims, err := model.NewEmployeeClaims(id, roles)
+	claims, err := model.NewClaims(employeeID, roles)
 
 	require.Nil(t, err)
-	require.NotEmpty(t, uuid.FromStringOrNil(employeeClaims.ID))
-	require.Equal(t, employeeClaims.Roles, roles)
+	require.NotEmpty(t, uuid.FromStringOrNil(claims.EmployeeID))
+	require.Equal(t, claims.Roles, roles)
 
-	_, err = model.NewEmployeeClaims("", roles)
+	_, err = model.NewClaims("", roles)
 	require.NotNil(t, err)
 }
