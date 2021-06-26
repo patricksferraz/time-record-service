@@ -12,7 +12,7 @@ definitions:
   rest.HTTPResponse:
     properties:
       code:
-        example: 400
+        example: 200
         type: integer
       message:
         example: a message
@@ -61,14 +61,14 @@ definitions:
     type: object
 info:
   contact:
-    email: comercial@coding4u.com.br
+    email: contato@coding4u.com.br
     name: Coding4u
   description: Swagger API for Golang Project Time Record.
   termsOfService: http://swagger.io/terms/
   title: Time Record Swagger API
   version: "1.0"
 paths:
-  /timeRecord:
+  /time-records:
     get:
       consumes:
       - application/json
@@ -137,7 +137,7 @@ paths:
       summary: register a new time record
       tags:
       - Time Record
-  /timeRecord/{id}:
+  /time-records/{id}:
     get:
       consumes:
       - application/json
@@ -169,7 +169,7 @@ paths:
       summary: find a time record
       tags:
       - Time Record
-  /timeRecord/{id}/approve:
+  /time-records/{id}/approve:
     post:
       consumes:
       - application/json
@@ -201,7 +201,7 @@ paths:
       summary: approve a pending time record
       tags:
       - Time Record
-  /timeRecord/{id}/refuse:
+  /time-records/{id}/refuse:
     post:
       consumes:
       - application/json
@@ -239,7 +239,7 @@ paths:
       summary: refuse a pending time record
       tags:
       - Time Record
-  /timeRecord/employee/{id}:
+  /time-records/employees/{id}:
     get:
       consumes:
       - application/json

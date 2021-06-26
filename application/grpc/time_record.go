@@ -24,7 +24,7 @@ func (t *TimeRecordGrpcService) RegisterTimeRecord(ctx context.Context, in *pb.R
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling RegisterTimeRecord request")
 
-	timeRecord, err := t.TimeRecordService.Register(ctx, in.Time.AsTime(), in.Description, t.AuthInterceptor.EmployeeClaims.ID)
+	timeRecord, err := t.TimeRecordService.Register(ctx, in.Time.AsTime(), in.Description, t.AuthInterceptor.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -54,7 +54,7 @@ func (t *TimeRecordGrpcService) ApproveTimeRecord(ctx context.Context, in *pb.Ap
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling ApproveTimeRecord request")
 
-	timeRecord, err := t.TimeRecordService.Approve(ctx, in.Id, t.AuthInterceptor.EmployeeClaims.ID)
+	timeRecord, err := t.TimeRecordService.Approve(ctx, in.Id, t.AuthInterceptor.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -77,7 +77,7 @@ func (t *TimeRecordGrpcService) RefuseTimeRecord(ctx context.Context, in *pb.Ref
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling RefuseTimeRecord request")
 
-	timeRecord, err := t.TimeRecordService.Refuse(ctx, in.Id, in.RefusedReason, t.AuthInterceptor.EmployeeClaims.ID)
+	timeRecord, err := t.TimeRecordService.Refuse(ctx, in.Id, in.RefusedReason, t.AuthInterceptor.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -164,7 +164,7 @@ func (t *TimeRecordGrpcService) ListTimeRecords(in *pb.ListTimeRecordsRequest, s
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling ListTimeRecords request")
 
-	timeRecords, err := t.TimeRecordService.FindAllByEmployeeID(ctx, t.AuthInterceptor.EmployeeClaims.ID, in.FromDate.AsTime(), in.ToDate.AsTime())
+	timeRecords, err := t.TimeRecordService.FindAllByEmployeeID(ctx, t.AuthInterceptor.Claims.EmployeeID, in.FromDate.AsTime(), in.ToDate.AsTime())
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()

@@ -43,7 +43,7 @@ func StartRestServer(database *db.Mongo, service pb.AuthServiceClient, port int)
 	timeRecordService := _service.NewTimeRecordService(timeRecordRepository)
 	timeRecordRestService := NewTimeRecordRestService(timeRecordService, authMiddlerare)
 
-	v1 := r.Group("api/v1/timeRecord")
+	v1 := r.Group("api/v1/time-records")
 	{
 		v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		authorized := v1.Group("/", authMiddlerare.Require())
@@ -54,7 +54,7 @@ func StartRestServer(database *db.Mongo, service pb.AuthServiceClient, port int)
 
 			authorized.GET("/", timeRecordRestService.ListTimeRecords)
 			authorized.GET("/:id", timeRecordRestService.FindTimeRecord)
-			authorized.GET("/employee/:id", timeRecordRestService.SearchTimeRecords)
+			authorized.GET("/employees/:id", timeRecordRestService.SearchTimeRecords)
 		}
 	}
 

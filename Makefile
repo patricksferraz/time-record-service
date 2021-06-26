@@ -14,6 +14,9 @@ logs:
 up:
 	docker-compose up -d $(SERVICES)
 
+start:
+	docker-compose start $(SERVICES)
+
 stop:
 	docker-compose stop $(SERVICES)
 

@@ -27,7 +27,7 @@ type TimeRecordRestService struct {
 // @Success 200 {object} TimeRecord
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
-// @Router /timeRecord [post]
+// @Router /time-records [post]
 func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 	var req TimeRecordRequest
 
@@ -47,7 +47,7 @@ func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("json", req).Info("handling TimeRecord request")
 
-	timeRecord, err := t.TimeRecordService.Register(ctx, req.Time, req.Description, t.AuthMiddleware.EmployeeClaims.ID)
+	timeRecord, err := t.TimeRecordService.Register(ctx, req.Time, req.Description, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -77,7 +77,7 @@ func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 // @Success 200 {object} HTTPResponse
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
-// @Router /timeRecord/{id}/approve [post]
+// @Router /time-records/{id}/approve [post]
 func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
 	var req IDRequest
 
@@ -97,7 +97,7 @@ func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("uri", req).Info("uri id request")
 
-	timeRecord, err := t.TimeRecordService.Approve(ctx, req.ID, t.AuthMiddleware.EmployeeClaims.ID)
+	timeRecord, err := t.TimeRecordService.Approve(ctx, req.ID, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -134,7 +134,7 @@ func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
 // @Success 200 {object} HTTPResponse
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
-// @Router /timeRecord/{id}/refuse [post]
+// @Router /time-records/{id}/refuse [post]
 func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
 	var uri IDRequest
 	var body RefuseRequest
@@ -169,7 +169,7 @@ func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("body", body).Info("handling Refuse request")
 
-	timeRecord, err := t.TimeRecordService.Refuse(ctx, uri.ID, body.RefusedReason, t.AuthMiddleware.EmployeeClaims.ID)
+	timeRecord, err := t.TimeRecordService.Refuse(ctx, uri.ID, body.RefusedReason, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -205,7 +205,7 @@ func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
 // @Success 200 {object} TimeRecord
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
-// @Router /timeRecord/{id} [get]
+// @Router /time-records/{id} [get]
 func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 	var req IDRequest
 
@@ -256,7 +256,7 @@ func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 // @Success 200 {array} TimeRecord
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
-// @Router /timeRecord/employee/{id} [get]
+// @Router /time-records/employees/{id} [get]
 func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 	var uri IDRequest
 	var body TimeRecordsRequest
@@ -321,7 +321,7 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 // @Success 200 {array} TimeRecord
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
-// @Router /timeRecord [get]
+// @Router /time-records [get]
 func (t *TimeRecordRestService) ListTimeRecords(ctx *gin.Context) {
 	var body TimeRecordsRequest
 
@@ -341,7 +341,7 @@ func (t *TimeRecordRestService) ListTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("query", body).Info("query TimeRecords request")
 
-	timeRecords, err := t.TimeRecordService.FindAllByEmployeeID(ctx, t.AuthMiddleware.EmployeeClaims.ID, body.FromDate, body.ToDate)
+	timeRecords, err := t.TimeRecordService.FindAllByEmployeeID(ctx, t.AuthMiddleware.Claims.EmployeeID, body.FromDate, body.ToDate)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()

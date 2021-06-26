@@ -15,8 +15,8 @@ import (
 )
 
 type AuthInterceptor struct {
-	AuthService    *service.AuthService
-	EmployeeClaims *model.EmployeeClaims
+	AuthService *service.AuthService
+	Claims      *model.Claims
 }
 
 func (a *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
@@ -91,7 +91,7 @@ func (a *AuthInterceptor) authorize(ctx context.Context, method string) error {
 	}
 	log.WithField("claims", claims).Info("verify accessToken")
 
-	a.EmployeeClaims = claims
+	a.Claims = claims
 
 	for _, role := range claims.Roles {
 		if role == method {

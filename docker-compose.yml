@@ -32,7 +32,7 @@ services:
       MONGODB_DATA_DIR: /data/db
       MONDODB_LOG_DIR: /dev/null
     volumes:
-      - .mgdata:/data/db
+      - mgdata:/data/db
     ports:
       - $DB_PORT:27017
     networks:
@@ -139,9 +139,11 @@ services:
 volumes:
   esdata:
     driver: local
+  mgdata:
+    driver: local
 
 networks:
   time-record:
     driver: bridge
-  elastic:
-    driver: bridge
+  # elastic:
+  #   driver: bridge

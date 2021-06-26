@@ -21,14 +21,14 @@ var doc = `{
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "Coding4u",
-            "email": "comercial@coding4u.com.br"
+            "email": "contato@coding4u.com.br"
         },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/timeRecord": {
+        "/time-records": {
             "get": {
                 "security": [
                     {
@@ -136,7 +136,7 @@ var doc = `{
                 }
             }
         },
-        "/timeRecord/employee/{id}": {
+        "/time-records/employees/{id}": {
             "get": {
                 "security": [
                     {
@@ -201,7 +201,7 @@ var doc = `{
                 }
             }
         },
-        "/timeRecord/{id}": {
+        "/time-records/{id}": {
             "get": {
                 "security": [
                     {
@@ -251,7 +251,7 @@ var doc = `{
                 }
             }
         },
-        "/timeRecord/{id}/approve": {
+        "/time-records/{id}/approve": {
             "post": {
                 "security": [
                     {
@@ -301,7 +301,7 @@ var doc = `{
                 }
             }
         },
-        "/timeRecord/{id}/refuse": {
+        "/time-records/{id}/refuse": {
             "post": {
                 "security": [
                     {
@@ -380,7 +380,7 @@ var doc = `{
             "properties": {
                 "code": {
                     "type": "integer",
-                    "example": 400
+                    "example": 200
                 },
                 "message": {
                     "type": "string",

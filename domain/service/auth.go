@@ -14,34 +14,34 @@ type AuthService struct {
 	Service pb.AuthServiceClient
 }
 
-func (a *AuthService) Verify(ctx context.Context, accessToken string) (*model.EmployeeClaims, error) {
+func (a *AuthService) Verify(ctx context.Context, accessToken string) (*model.Claims, error) {
 	span, ctx := apm.StartSpan(ctx, "Verify", "auth domain service")
 	defer span.End()
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
-	req := &pb.FindEmployeeClaimsByTokenRequest{
+	req := &pb.FindClaimsByTokenRequest{
 		AccessToken: accessToken,
 	}
-	log.WithField("req", req).Info("FindEmployeeClaimsByToken request")
+	log.WithField("req", req).Info("FindClaimsByToken request")
 
-	employee, err := a.Service.FindEmployeeClaimsByToken(ctx, req)
+	_claims, err := a.Service.FindClaimsByToken(ctx, req)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
 		return nil, err
 	}
-	log.WithField("employee", employee).Info("employee response")
+	log.WithField("claims", _claims).Info("claims response")
 
-	employeeClaims, err := model.NewEmployeeClaims(employee.Id, employee.Roles)
+	claims, err := model.NewClaims(_claims.EmployeeId, _claims.Roles)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
 		return nil, err
 	}
-	log.WithField("employeeClaims", employeeClaims).Info("employee created")
+	log.WithField("claims", claims).Info("claims created")
 
-	return employeeClaims, nil
+	return claims, nil
 }
 
 func NewAuthService(service pb.AuthServiceClient) *AuthService {

@@ -14,8 +14,8 @@ import (
 )
 
 type AuthMiddleware struct {
-	AuthService    *service.AuthService
-	EmployeeClaims *model.EmployeeClaims
+	AuthService *service.AuthService
+	Claims      *model.Claims
 }
 
 func (a *AuthMiddleware) Require() gin.HandlerFunc {
@@ -31,7 +31,6 @@ func (a *AuthMiddleware) Require() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
-		log.WithField("accessToken", accessToken).Info("handling accessToken request")
 
 		claims, err := a.AuthService.Verify(ctx, accessToken)
 		if err != nil {
@@ -42,7 +41,7 @@ func (a *AuthMiddleware) Require() gin.HandlerFunc {
 		}
 		log.WithField("claims", claims).Info("verify accessToken")
 
-		a.EmployeeClaims = claims
+		a.Claims = claims
 
 		// TODO: adds retricted permissions
 		// for _, role := range claims.Roles {
