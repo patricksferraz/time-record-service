@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/model"
+	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/repository"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/utils"
@@ -25,10 +25,11 @@ func TestRepository_Register(t *testing.T) {
 	now := time.Now()
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
-	timeRecord, _ := model.NewTimeRecord(now, description, employeeID)
+	timeRecord, _ := entity.NewTimeRecord(now, description, employeeID, employeeID)
 
-	err := repository.Register(ctx, timeRecord)
+	id, err := repository.RegisterTimeRecord(ctx, timeRecord)
 	require.Nil(t, err)
+	require.Equal(t, id, timeRecord.ID)
 }
 
 func TestRepository_Save(t *testing.T) {
@@ -42,12 +43,12 @@ func TestRepository_Save(t *testing.T) {
 	now := time.Now()
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
-	timeRecord, _ := model.NewTimeRecord(now, description, employeeID)
+	timeRecord, _ := entity.NewTimeRecord(now, description, employeeID, employeeID)
 
-	repository.Register(ctx, timeRecord)
+	repository.RegisterTimeRecord(ctx, timeRecord)
 
 	timeRecord.Description = faker.Lorem().Sentence(10)
-	err := repository.Save(ctx, timeRecord)
+	err := repository.SaveTimeRecord(ctx, timeRecord)
 	require.Nil(t, err)
 }
 
@@ -64,11 +65,11 @@ func TestRepository_Find(t *testing.T) {
 	now := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
-	timeRecord, _ := model.NewTimeRecord(now, description, employeeID)
+	timeRecord, _ := entity.NewTimeRecord(now, description, employeeID, employeeID)
 
-	repository.Register(ctx, timeRecord)
+	repository.RegisterTimeRecord(ctx, timeRecord)
 
-	timeRecordDb, err := repository.Find(ctx, timeRecord.ID)
+	timeRecordDb, err := repository.FindTimeRecord(ctx, timeRecord.ID)
 	require.Nil(t, err)
 	require.Equal(t, timeRecord.ID, timeRecordDb.ID)
 	require.True(t, timeRecord.Time.Equal(timeRecordDb.Time))
@@ -94,11 +95,11 @@ func TestRepository_FindAllByEmployeeID(t *testing.T) {
 	now := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
-	timeRecord, _ := model.NewTimeRecord(now, description, employeeID)
+	timeRecord, _ := entity.NewTimeRecord(now, description, employeeID, employeeID)
 
-	repository.Register(ctx, timeRecord)
+	repository.RegisterTimeRecord(ctx, timeRecord)
 
-	timeRecordsDb, err := repository.FindAllByEmployeeID(ctx, timeRecord.EmployeeID, now, now)
+	timeRecordsDb, err := repository.SearchTimeRecords(ctx, timeRecord.EmployeeID, now, now)
 	require.Nil(t, err)
 	require.Equal(t, timeRecord.ID, timeRecordsDb[0].ID)
 	require.True(t, timeRecord.Time.Equal(timeRecordsDb[0].Time))

@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/model"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/service"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/repository"
@@ -34,17 +33,12 @@ func TestService_Register(t *testing.T) {
 	_time := time.Now()
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
-	timeRecord, err := timeRecordService.Register(ctx, _time, description, employeeID)
+	timeRecordID, err := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
 
 	require.Nil(t, err)
-	require.NotEmpty(t, uuid.FromStringOrNil(timeRecord.ID))
-	require.Equal(t, timeRecord.Time, _time)
-	require.Equal(t, timeRecord.Status, model.APPROVED)
-	require.Equal(t, timeRecord.Description, description)
-	require.Equal(t, timeRecord.RegularTime, true)
-	require.Equal(t, timeRecord.EmployeeID, employeeID)
+	require.NotEmpty(t, uuid.FromStringOrNil(*timeRecordID))
 
-	_, err = timeRecordService.Register(ctx, _time.AddDate(0, 0, 1), description, employeeID)
+	_, err = timeRecordService.RegisterTimeRecord(ctx, _time.AddDate(0, 0, 1), description, employeeID, employeeID)
 	require.NotNil(t, err)
 }
 
@@ -66,17 +60,16 @@ func TestService_Approve(t *testing.T) {
 	_time := time.Now().AddDate(0, 0, -1)
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
-	timeRecord, _ := timeRecordService.Register(ctx, _time, description, employeeID)
+	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
 
 	approvedBy := uuid.NewV4().String()
-	_, err = timeRecordService.Approve(ctx, "", approvedBy)
+	err = timeRecordService.ApproveTimeRecord(ctx, "", approvedBy)
 	require.NotNil(t, err)
-	_, err = timeRecordService.Approve(ctx, timeRecord.ID, "")
+	err = timeRecordService.ApproveTimeRecord(ctx, *timeRecordID, "")
 	require.NotNil(t, err)
 
-	timeRecord, err = timeRecordService.Approve(ctx, timeRecord.ID, approvedBy)
+	err = timeRecordService.ApproveTimeRecord(ctx, *timeRecordID, approvedBy)
 	require.Nil(t, err)
-	require.Equal(t, timeRecord.ApprovedBy, approvedBy)
 }
 
 func TestService_Refuse(t *testing.T) {
@@ -97,19 +90,18 @@ func TestService_Refuse(t *testing.T) {
 	_time := time.Now().AddDate(0, 0, -1)
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
-	timeRecord, _ := timeRecordService.Register(ctx, _time, description, employeeID)
+	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
 
 	auditedBy := uuid.NewV4().String()
-	_, err = timeRecordService.Refuse(ctx, "", auditedBy, description)
+	err = timeRecordService.RefuseTimeRecord(ctx, "", auditedBy, description)
 	require.NotNil(t, err)
-	_, err = timeRecordService.Refuse(ctx, timeRecord.ID, "", description)
+	err = timeRecordService.RefuseTimeRecord(ctx, *timeRecordID, "", description)
 	require.NotNil(t, err)
-	_, err = timeRecordService.Refuse(ctx, timeRecord.ID, auditedBy, "")
+	err = timeRecordService.RefuseTimeRecord(ctx, *timeRecordID, auditedBy, "")
 	require.NotNil(t, err)
 
-	timeRecord, err = timeRecordService.Refuse(ctx, timeRecord.ID, description, auditedBy)
+	err = timeRecordService.RefuseTimeRecord(ctx, *timeRecordID, description, auditedBy)
 	require.Nil(t, err)
-	require.Equal(t, timeRecord.RefusedBy, auditedBy)
 }
 
 func TestService_Find(t *testing.T) {
@@ -130,14 +122,14 @@ func TestService_Find(t *testing.T) {
 	_time := time.Now().AddDate(0, 0, -1)
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
-	timeRecord, _ := timeRecordService.Register(ctx, _time, description, employeeID)
+	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
 
-	_, err = timeRecordService.Find(ctx, timeRecord.ID)
+	timeRecord, err := timeRecordService.FindTimeRecord(ctx, *timeRecordID)
 	require.Nil(t, err)
 	require.True(t, timeRecord.Time.Equal(_time))
 	require.Equal(t, timeRecord.Description, description)
 	require.Equal(t, timeRecord.EmployeeID, employeeID)
-	_, err = timeRecordService.Find(ctx, "")
+	_, err = timeRecordService.FindTimeRecord(ctx, "")
 	require.NotNil(t, err)
 }
 
@@ -159,15 +151,16 @@ func TestService_FindAllByEmployeeID(t *testing.T) {
 	_time := time.Now()
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
-	timeRecord, _ := timeRecordService.Register(ctx, _time, description, employeeID)
+	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
+	timeRecord, _ := timeRecordService.FindTimeRecord(ctx, *timeRecordID)
 
 	fromDate := _time.AddDate(0, 0, -1)
 	toDate := _time.AddDate(0, 0, 1)
-	trs, err := timeRecordService.FindAllByEmployeeID(ctx, timeRecord.EmployeeID, fromDate, toDate)
+	trs, err := timeRecordService.SearchTimeRecords(ctx, employeeID, fromDate, toDate)
 	require.Nil(t, err)
 	require.Len(t, trs, 1)
 	require.NotEmpty(t, trs)
-	require.Equal(t, timeRecord.ID, trs[0].ID)
+	require.Equal(t, *timeRecordID, trs[0].ID)
 	require.Equal(t, timeRecord.Time.Unix(), trs[0].Time.Unix())
 	require.Equal(t, timeRecord.Description, trs[0].Description)
 	require.Equal(t, timeRecord.RegularTime, trs[0].RegularTime)
@@ -178,7 +171,7 @@ func TestService_FindAllByEmployeeID(t *testing.T) {
 	require.Equal(t, timeRecord.CreatedAt.Unix(), trs[0].CreatedAt.Unix())
 	require.Equal(t, timeRecord.UpdatedAt.Unix(), trs[0].UpdatedAt.Unix())
 
-	trs, err = timeRecordService.FindAllByEmployeeID(ctx, "", fromDate, toDate)
+	trs, err = timeRecordService.SearchTimeRecords(ctx, "", fromDate, toDate)
 	require.Nil(t, err)
 	require.Empty(t, trs)
 }

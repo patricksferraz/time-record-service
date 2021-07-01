@@ -52,9 +52,8 @@ func StartRestServer(database *db.Mongo, service pb.AuthServiceClient, port int)
 			authorized.POST("/:id/approve", timeRecordRestService.ApproveTimeRecord)
 			authorized.POST("/:id/refuse", timeRecordRestService.RefuseTimeRecord)
 
-			authorized.GET("/", timeRecordRestService.ListTimeRecords)
+			authorized.GET("/", timeRecordRestService.SearchTimeRecords)
 			authorized.GET("/:id", timeRecordRestService.FindTimeRecord)
-			authorized.GET("/employees/:id", timeRecordRestService.SearchTimeRecords)
 		}
 	}
 

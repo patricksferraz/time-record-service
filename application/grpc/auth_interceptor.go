@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/model"
+	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/service"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/logger"
 	"go.elastic.co/apm"
@@ -16,7 +16,7 @@ import (
 
 type AuthInterceptor struct {
 	AuthService *service.AuthService
-	Claims      *model.Claims
+	Claims      *entity.Claims
 }
 
 func (a *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {

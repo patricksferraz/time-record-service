@@ -9,6 +9,7 @@ type Base struct {
 }
 
 type TimeRecordRequest struct {
+	EmployeeID  string    `json:"employee_id,omitempty" binding:"required,uuid"`
 	Time        time.Time `json:"time,omitempty" time_format:"RFC3339" binding:"required"`
 	Description string    `json:"description,omitempty"`
 }
@@ -35,7 +36,7 @@ type HTTPError struct {
 	Error string `json:"error,omitempty" example:"status bad request"`
 }
 
-type IDRequest struct {
+type ID struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
@@ -44,6 +45,7 @@ type RefuseRequest struct {
 }
 
 type TimeRecordsRequest struct {
-	FromDate time.Time `json:"from_date" form:"from_date" binding:"required"`
-	ToDate   time.Time `json:"to_date" form:"to_date" binding:"required"`
+	EmployeeID string    `json:"employee_id,omitempty" binding:"required,uuid"`
+	FromDate   time.Time `json:"from_date" form:"from_date" binding:"required"`
+	ToDate     time.Time `json:"to_date" form:"to_date" binding:"required"`
 }

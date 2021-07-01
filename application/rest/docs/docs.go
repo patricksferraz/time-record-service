@@ -35,7 +35,7 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "List the employee's time records",
+                "description": "Search for employee time records by ` + "`" + `id` + "`" + `",
                 "consumes": [
                     "application/json"
                 ],
@@ -45,9 +45,22 @@ var doc = `{
                 "tags": [
                     "Time Record"
                 ],
-                "summary": "list the employee's time records",
-                "operationId": "listTimeRecords",
+                "summary": "search time records by employee id",
+                "operationId": "searchTimeRecords",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Employee ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "employee_id",
+                        "in": "query",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "name": "from_date",
@@ -118,72 +131,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.TimeRecord"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/rest.HTTPError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/rest.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/time-records/employees/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Search for employee time records by ` + "`" + `id` + "`" + `",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Time Record"
-                ],
-                "summary": "search time records by employee id",
-                "operationId": "searchTimeRecords",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Employee ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "from_date",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "to_date",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/rest.TimeRecord"
-                            }
+                            "$ref": "#/definitions/rest.ID"
                         }
                     },
                     "400": {
@@ -388,6 +336,17 @@ var doc = `{
                 }
             }
         },
+        "rest.ID": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
         "rest.RefuseRequest": {
             "type": "object",
             "properties": {
@@ -440,10 +399,14 @@ var doc = `{
         "rest.TimeRecordRequest": {
             "type": "object",
             "required": [
+                "employee_id",
                 "time"
             ],
             "properties": {
                 "description": {
+                    "type": "string"
+                },
+                "employee_id": {
                     "type": "string"
                 },
                 "time": {

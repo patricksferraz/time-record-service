@@ -6,8 +6,13 @@ import "google/protobuf/timestamp.proto";
 option go_package = "/protofiles;pb";
 
 message RegisterTimeRecordRequest {
-    google.protobuf.Timestamp time = 1;
-    string description = 2;
+    string employee_id = 1;
+    google.protobuf.Timestamp time = 2;
+    string description = 3;
+}
+
+message RegisterTimeRecordResponse {
+    string id = 1;
 }
 
 message ApproveTimeRecordRequest {
@@ -20,35 +25,30 @@ message RefuseTimeRecordRequest {
 }
 
 message StatusResponse {
-    string status = 1;
-    string error = 2;
+    uint32 code = 1;
+    string message = 2;
+    string error = 3;
 }
 
 message FindTimeRecordRequest {
     string id = 1;
 }
 
+message FindTimeRecordResponse {
+    TimeRecord time_record = 1;
+}
+
 message SearchTimeRecordsRequest {
     string employee_id = 1;
     google.protobuf.Timestamp from_date = 2;
     google.protobuf.Timestamp to_date = 3;
-    // int32 page_size = 4;
-    // string page_token = 5;
-}
-
-message ListTimeRecordsRequest {
-    google.protobuf.Timestamp from_date = 2;
-    google.protobuf.Timestamp to_date = 3;
-    // int32 page_size = 4;
-    // string page_token = 5;
 }
 
 message TimeRecord {
     enum Status {
-        STATUS_UNSPECIFIED = 0;
-        PENDING = 1;
-		APPROVED = 2;
-        REFUSED = 3;
+        PENDING = 0;
+		APPROVED = 1;
+        REFUSED = 2;
     }
 
     string id = 1;
@@ -64,16 +64,10 @@ message TimeRecord {
     google.protobuf.Timestamp updated_at = 11;
 }
 
-// message ListTimeRecordsResponse {
-//     repeated TimeRecord time_records = 1;
-//     string next_page_token = 2;
-// }
-
 service TimeRecordService {
-    rpc RegisterTimeRecord (RegisterTimeRecordRequest) returns (TimeRecord);
+    rpc RegisterTimeRecord (RegisterTimeRecordRequest) returns (RegisterTimeRecordResponse);
     rpc ApproveTimeRecord (ApproveTimeRecordRequest) returns (StatusResponse);
     rpc RefuseTimeRecord (RefuseTimeRecordRequest) returns (StatusResponse);
-    rpc FindTimeRecord (FindTimeRecordRequest) returns (TimeRecord);
+    rpc FindTimeRecord (FindTimeRecordRequest) returns (FindTimeRecordResponse);
     rpc SearchTimeRecords (SearchTimeRecordsRequest) returns (stream TimeRecord);
-    rpc ListTimeRecords (ListTimeRecordsRequest) returns (stream TimeRecord);
 }
