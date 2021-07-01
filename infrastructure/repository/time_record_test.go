@@ -14,7 +14,7 @@ import (
 	"syreclabs.com/go/faker"
 )
 
-func TestRepository_Register(t *testing.T) {
+func TestRepository_RegisterTimeRecord(t *testing.T) {
 
 	ctx := context.Background()
 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
@@ -29,10 +29,10 @@ func TestRepository_Register(t *testing.T) {
 
 	id, err := repository.RegisterTimeRecord(ctx, timeRecord)
 	require.Nil(t, err)
-	require.Equal(t, id, timeRecord.ID)
+	require.Equal(t, *id, timeRecord.ID)
 }
 
-func TestRepository_Save(t *testing.T) {
+func TestRepository_SaveTimeRecord(t *testing.T) {
 
 	ctx := context.Background()
 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
@@ -52,7 +52,7 @@ func TestRepository_Save(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestRepository_Find(t *testing.T) {
+func TestRepository_FindTimeRecord(t *testing.T) {
 
 	ctx := context.Background()
 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
@@ -82,7 +82,7 @@ func TestRepository_Find(t *testing.T) {
 	require.Empty(t, timeRecordDb.UpdatedAt)
 }
 
-func TestRepository_FindAllByEmployeeID(t *testing.T) {
+func TestRepository_SearchTimeRecords(t *testing.T) {
 
 	ctx := context.Background()
 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")

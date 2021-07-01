@@ -15,7 +15,7 @@ import (
 	"syreclabs.com/go/faker"
 )
 
-func TestService_Register(t *testing.T) {
+func TestService_RegisterTimeRecord(t *testing.T) {
 
 	ctx := context.Background()
 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
@@ -42,7 +42,7 @@ func TestService_Register(t *testing.T) {
 	require.NotNil(t, err)
 }
 
-func TestService_Approve(t *testing.T) {
+func TestService_ApproveTimeRecord(t *testing.T) {
 
 	ctx := context.Background()
 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
@@ -72,7 +72,7 @@ func TestService_Approve(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestService_Refuse(t *testing.T) {
+func TestService_RefuseTimeRecord(t *testing.T) {
 
 	ctx := context.Background()
 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
@@ -104,7 +104,7 @@ func TestService_Refuse(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestService_Find(t *testing.T) {
+func TestService_FindTimeRecord(t *testing.T) {
 
 	ctx := context.Background()
 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
@@ -126,14 +126,14 @@ func TestService_Find(t *testing.T) {
 
 	timeRecord, err := timeRecordService.FindTimeRecord(ctx, *timeRecordID)
 	require.Nil(t, err)
-	require.True(t, timeRecord.Time.Equal(_time))
+	require.Equal(t, _time.Unix(), timeRecord.Time.Unix())
 	require.Equal(t, timeRecord.Description, description)
 	require.Equal(t, timeRecord.EmployeeID, employeeID)
 	_, err = timeRecordService.FindTimeRecord(ctx, "")
 	require.NotNil(t, err)
 }
 
-func TestService_FindAllByEmployeeID(t *testing.T) {
+func TestService_SearchTimeRecords(t *testing.T) {
 
 	ctx := context.Background()
 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
