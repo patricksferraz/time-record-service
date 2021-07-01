@@ -250,7 +250,6 @@ func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 // @Description Search for employee time records by `id`
 // @Accept json
 // @Produce json
-// @Param id path string true "Employee ID"
 // @Param body query TimeRecordsRequest true "JSON body for search time records"
 // @Success 200 {array} TimeRecord
 // @Failure 400 {object} HTTPError

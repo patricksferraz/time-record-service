@@ -57,11 +57,12 @@ message TimeRecord {
     string description = 4;
     string refused_reason = 5;
     bool regular_time = 6;
-    string employee_id = 7;
-    string approved_by = 8;
-    string refused_by = 9;
-    google.protobuf.Timestamp created_at = 10;
-    google.protobuf.Timestamp updated_at = 11;
+    int64 tz_offset = 7;
+    string employee_id = 8;
+    string approved_by = 9;
+    string refused_by = 10;
+    google.protobuf.Timestamp created_at = 11;
+    google.protobuf.Timestamp updated_at = 12;
 }
 
 service TimeRecordService {

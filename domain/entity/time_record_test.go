@@ -13,6 +13,7 @@ import (
 func TestModel_NewTimeRecord(t *testing.T) {
 
 	now := time.Now()
+	_, offset := now.Zone()
 	description := faker.Lorem().Sentence(10)
 	employeeID := uuid.NewV4().String()
 	timeRecord, err := entity.NewTimeRecord(now, description, employeeID, employeeID)
@@ -23,9 +24,11 @@ func TestModel_NewTimeRecord(t *testing.T) {
 	require.Equal(t, timeRecord.Status, entity.APPROVED)
 	require.Equal(t, timeRecord.Description, description)
 	require.Equal(t, timeRecord.RegularTime, true)
+	require.Equal(t, timeRecord.TzOffset, offset)
 	require.Equal(t, timeRecord.EmployeeID, employeeID)
 
 	yesterday := now.AddDate(0, 0, -1)
+	_, offset = yesterday.Zone()
 	timeRecord, err = entity.NewTimeRecord(yesterday, description, employeeID, employeeID)
 
 	require.Nil(t, err)
@@ -34,6 +37,7 @@ func TestModel_NewTimeRecord(t *testing.T) {
 	require.Equal(t, timeRecord.Status, entity.PENDING)
 	require.Equal(t, timeRecord.Description, description)
 	require.Equal(t, timeRecord.RegularTime, false)
+	require.Equal(t, timeRecord.TzOffset, offset)
 	require.Equal(t, timeRecord.EmployeeID, employeeID)
 
 	tomorrow := now.AddDate(0, 0, 1)
