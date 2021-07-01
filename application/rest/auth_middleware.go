@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/model"
+	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/service"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/logger"
 	"github.com/gin-gonic/gin"
@@ -15,7 +15,7 @@ import (
 
 type AuthMiddleware struct {
 	AuthService *service.AuthService
-	Claims      *model.Claims
+	Claims      *entity.Claims
 }
 
 func (a *AuthMiddleware) Require() gin.HandlerFunc {

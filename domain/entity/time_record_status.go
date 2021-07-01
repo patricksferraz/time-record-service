@@ -1,4 +1,4 @@
-package model
+package entity
 
 import (
 	"github.com/asaskevich/govalidator"
@@ -16,7 +16,7 @@ func init() {
 type TimeRecordStatus int
 
 const (
-	PENDING TimeRecordStatus = iota + 1
+	PENDING TimeRecordStatus = iota
 	APPROVED
 	REFUSED
 )

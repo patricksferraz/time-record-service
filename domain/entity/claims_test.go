@@ -1,9 +1,9 @@
-package model_test
+package entity_test
 
 import (
 	"testing"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/model"
+	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	"syreclabs.com/go/faker"
@@ -19,12 +19,12 @@ func TestModel_NewEmployeeClaims(t *testing.T) {
 		roles = append(roles, faker.Lorem().Word())
 	}
 
-	claims, err := model.NewClaims(employeeID, roles)
+	claims, err := entity.NewClaims(employeeID, roles)
 
 	require.Nil(t, err)
 	require.NotEmpty(t, uuid.FromStringOrNil(claims.EmployeeID))
 	require.Equal(t, claims.Roles, roles)
 
-	_, err = model.NewClaims("", roles)
+	_, err = entity.NewClaims("", roles)
 	require.NotNil(t, err)
 }

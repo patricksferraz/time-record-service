@@ -145,5 +145,5 @@ volumes:
 networks:
   time-record:
     driver: bridge
-  # elastic:
-  #   driver: bridge
+  elastic:
+    driver: bridge

@@ -3,6 +3,7 @@ package rest
 import (
 	"net/http"
 
+	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/service"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/logger"
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,7 @@ type TimeRecordRestService struct {
 // @Accept json
 // @Produce json
 // @Param body body TimeRecordRequest true "JSON body for register a new time record"
-// @Success 200 {object} TimeRecord
+// @Success 200 {object} ID
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records [post]
@@ -47,7 +48,7 @@ func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("json", req).Info("handling TimeRecord request")
 
-	timeRecord, err := t.TimeRecordService.Register(ctx, req.Time, req.Description, t.AuthMiddleware.Claims.EmployeeID)
+	timeRecordID, err := t.TimeRecordService.RegisterTimeRecord(ctx, req.Time, req.Description, req.EmployeeID, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -60,9 +61,9 @@ func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 		)
 		return
 	}
-	log.WithField("timeRecord", timeRecord).Info("timeRecord registered")
+	log.WithField("timeRecordID", timeRecordID).Info("timeRecordID registered")
 
-	ctx.JSON(http.StatusOK, timeRecord)
+	ctx.JSON(http.StatusOK, ID{ID: *timeRecordID})
 }
 
 // ApproveTimeRecord godoc
@@ -79,7 +80,7 @@ func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 // @Failure 403 {object} HTTPError
 // @Router /time-records/{id}/approve [post]
 func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
-	var req IDRequest
+	var req ID
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
@@ -97,7 +98,7 @@ func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("uri", req).Info("uri id request")
 
-	timeRecord, err := t.TimeRecordService.Approve(ctx, req.ID, t.AuthMiddleware.Claims.EmployeeID)
+	err := t.TimeRecordService.ApproveTimeRecord(ctx, req.ID, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -110,13 +111,12 @@ func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
 		)
 		return
 	}
-	log.WithField("timeRecord", timeRecord).Info("timeRecord approved")
 
 	ctx.JSON(
 		http.StatusOK,
 		HTTPResponse{
 			Code:    http.StatusOK,
-			Message: "successfully " + timeRecord.Status.String(),
+			Message: "successfully " + entity.APPROVED.String(),
 		},
 	)
 }
@@ -136,7 +136,7 @@ func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
 // @Failure 403 {object} HTTPError
 // @Router /time-records/{id}/refuse [post]
 func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
-	var uri IDRequest
+	var uri ID
 	var body RefuseRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
@@ -169,7 +169,7 @@ func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("body", body).Info("handling Refuse request")
 
-	timeRecord, err := t.TimeRecordService.Refuse(ctx, uri.ID, body.RefusedReason, t.AuthMiddleware.Claims.EmployeeID)
+	err := t.TimeRecordService.RefuseTimeRecord(ctx, uri.ID, body.RefusedReason, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -182,13 +182,12 @@ func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
 		)
 		return
 	}
-	log.WithField("timeRecord", timeRecord).Info("timeRecord refused")
 
 	ctx.JSON(
 		http.StatusOK,
 		HTTPResponse{
 			Code:    http.StatusOK,
-			Message: "successfully " + timeRecord.Status.String(),
+			Message: "successfully " + entity.REFUSED.String(),
 		},
 	)
 }
@@ -207,7 +206,7 @@ func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
 // @Failure 403 {object} HTTPError
 // @Router /time-records/{id} [get]
 func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
-	var req IDRequest
+	var req ID
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
@@ -225,7 +224,7 @@ func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("uri", req).Info("uri id request")
 
-	timeRecord, err := t.TimeRecordService.Find(ctx, req.ID)
+	timeRecord, err := t.TimeRecordService.FindTimeRecord(ctx, req.ID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -256,26 +255,11 @@ func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 // @Success 200 {array} TimeRecord
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
-// @Router /time-records/employees/{id} [get]
+// @Router /time-records [get]
 func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
-	var uri IDRequest
 	var body TimeRecordsRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
-
-	if err := ctx.ShouldBindUri(&uri); err != nil {
-		log.WithError(err)
-		apm.CaptureError(ctx, err).Send()
-		ctx.JSON(
-			http.StatusBadRequest,
-			HTTPError{
-				Code:  http.StatusBadRequest,
-				Error: err.Error(),
-			},
-		)
-		return
-	}
-	log.WithField("uri", uri).Info("uri id request")
 
 	if err := ctx.ShouldBindQuery(&body); err != nil {
 		log.WithError(err)
@@ -291,7 +275,7 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("query", body).Info("query TimeRecords request")
 
-	timeRecords, err := t.TimeRecordService.FindAllByEmployeeID(ctx, uri.ID, body.FromDate, body.ToDate)
+	timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, body.EmployeeID, body.FromDate, body.ToDate)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -305,56 +289,6 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 		return
 	}
 	log.WithField("timeRecords", timeRecords).Info("timeRecords searched")
-
-	ctx.JSON(http.StatusOK, timeRecords)
-}
-
-// ListTimeRecords godoc
-// @Security ApiKeyAuth
-// @Summary list the employee's time records
-// @ID listTimeRecords
-// @Tags Time Record
-// @Description List the employee's time records
-// @Accept json
-// @Produce json
-// @Param body query TimeRecordsRequest true "JSON body for list the employee's time records"
-// @Success 200 {array} TimeRecord
-// @Failure 400 {object} HTTPError
-// @Failure 403 {object} HTTPError
-// @Router /time-records [get]
-func (t *TimeRecordRestService) ListTimeRecords(ctx *gin.Context) {
-	var body TimeRecordsRequest
-
-	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
-
-	if err := ctx.ShouldBindQuery(&body); err != nil {
-		log.WithError(err)
-		apm.CaptureError(ctx, err).Send()
-		ctx.JSON(
-			http.StatusBadRequest,
-			HTTPError{
-				Code:  http.StatusBadRequest,
-				Error: err.Error(),
-			},
-		)
-		return
-	}
-	log.WithField("query", body).Info("query TimeRecords request")
-
-	timeRecords, err := t.TimeRecordService.FindAllByEmployeeID(ctx, t.AuthMiddleware.Claims.EmployeeID, body.FromDate, body.ToDate)
-	if err != nil {
-		log.WithError(err)
-		apm.CaptureError(ctx, err).Send()
-		ctx.JSON(
-			http.StatusForbidden,
-			HTTPError{
-				Code:  http.StatusForbidden,
-				Error: err.Error(),
-			},
-		)
-		return
-	}
-	log.WithField("timeRecords", timeRecords).Info("timeRecords listed")
 
 	ctx.JSON(http.StatusOK, timeRecords)
 }

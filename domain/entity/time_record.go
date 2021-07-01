@@ -1,4 +1,4 @@
-package model
+package entity
 
 import (
 	"errors"
@@ -16,13 +16,14 @@ func init() {
 type TimeRecord struct {
 	Base          `bson:",inline" valid:"-"`
 	Time          time.Time        `json:"time,omitempty" bson:"time" valid:"required"`
-	Status        TimeRecordStatus `json:"status,omitempty" bson:"status" valid:"timeRecordStatus"`
+	Status        TimeRecordStatus `json:"status,omitempty" bson:"status" valid:"timeRecordStatus,optional"`
 	Description   string           `json:"description,omitempty" bson:"description,omitempty" valid:"-"`
 	RefusedReason string           `json:"refused_reason,omitempty" bson:"refused_reason,omitempty" valid:"-"`
 	RegularTime   bool             `json:"regular_time,omitempty" bson:"regular_time" valid:"-"`
 	EmployeeID    string           `json:"employee_id,omitempty" bson:"employee_id" valid:"uuid"`
 	ApprovedBy    string           `json:"approved_by,omitempty" bson:"approved_by,omitempty" valid:"-"`
 	RefusedBy     string           `json:"refused_by,omitempty" bson:"refused_by,omitempty" valid:"-"`
+	CreatedBy     string           `json:"created_by,omitempty" bson:"created_by" valid:"uuid"`
 }
 
 func (t *TimeRecord) isValid() error {
@@ -94,7 +95,7 @@ func (t *TimeRecord) Refuse(refusedBy, refusedReason string) error {
 	return err
 }
 
-func NewTimeRecord(_time time.Time, description, employeeID string) (*TimeRecord, error) {
+func NewTimeRecord(_time time.Time, description, employeeID, createdBy string) (*TimeRecord, error) {
 
 	timeRecord := TimeRecord{
 		Time:        _time,
@@ -102,6 +103,7 @@ func NewTimeRecord(_time time.Time, description, employeeID string) (*TimeRecord
 		Description: description,
 		RegularTime: true,
 		EmployeeID:  employeeID,
+		CreatedBy:   createdBy,
 	}
 
 	loc := _time.Location()

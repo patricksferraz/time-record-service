@@ -4,10 +4,13 @@ import (
 	"context"
 
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/grpc/pb"
+	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/service"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/logger"
 	"go.elastic.co/apm"
 	"go.elastic.co/apm/module/apmlogrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -17,33 +20,23 @@ type TimeRecordGrpcService struct {
 	AuthInterceptor   *AuthInterceptor
 }
 
-func (t *TimeRecordGrpcService) RegisterTimeRecord(ctx context.Context, in *pb.RegisterTimeRecordRequest) (*pb.TimeRecord, error) {
+func (t *TimeRecordGrpcService) RegisterTimeRecord(ctx context.Context, in *pb.RegisterTimeRecordRequest) (*pb.RegisterTimeRecordResponse, error) {
 	span, ctx := apm.StartSpan(ctx, "RegisterTimeRecord", "gRPC application")
 	defer span.End()
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling RegisterTimeRecord request")
 
-	timeRecord, err := t.TimeRecordService.Register(ctx, in.Time.AsTime(), in.Description, t.AuthInterceptor.Claims.EmployeeID)
+	timeRecordID, err := t.TimeRecordService.RegisterTimeRecord(ctx, in.Time.AsTime(), in.Description, in.EmployeeId, t.AuthInterceptor.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
-		return &pb.TimeRecord{}, err
+		return &pb.RegisterTimeRecordResponse{}, err
 	}
-	log.WithField("timeRecord", timeRecord).Info("timeRecord registered")
+	log.WithField("timeRecordID", *timeRecordID).Info("timeRecord registered")
 
-	return &pb.TimeRecord{
-		Id:            timeRecord.ID,
-		Time:          timestamppb.New(timeRecord.Time),
-		Status:        pb.TimeRecord_Status(timeRecord.Status),
-		Description:   timeRecord.Description,
-		RefusedReason: timeRecord.RefusedReason,
-		RegularTime:   timeRecord.RegularTime,
-		EmployeeId:    timeRecord.EmployeeID,
-		ApprovedBy:    timeRecord.ApprovedBy,
-		RefusedBy:     timeRecord.RefusedBy,
-		CreatedAt:     timestamppb.New(timeRecord.CreatedAt),
-		UpdatedAt:     timestamppb.New(timeRecord.UpdatedAt),
+	return &pb.RegisterTimeRecordResponse{
+		Id: *timeRecordID,
 	}, nil
 }
 
@@ -54,19 +47,20 @@ func (t *TimeRecordGrpcService) ApproveTimeRecord(ctx context.Context, in *pb.Ap
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling ApproveTimeRecord request")
 
-	timeRecord, err := t.TimeRecordService.Approve(ctx, in.Id, t.AuthInterceptor.Claims.EmployeeID)
+	err := t.TimeRecordService.ApproveTimeRecord(ctx, in.Id, t.AuthInterceptor.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
 		return &pb.StatusResponse{
-			Status: "not updated",
-			Error:  err.Error(),
+			Code:    uint32(status.Code(err)),
+			Message: "not updated",
+			Error:   err.Error(),
 		}, err
 	}
-	log.WithField("timeRecord", timeRecord).Info("timeRecord approved")
 
 	return &pb.StatusResponse{
-		Status: "successfully " + timeRecord.Status.String(),
+		Code:    uint32(codes.OK),
+		Message: "successfully " + entity.APPROVED.String(),
 	}, nil
 }
 
@@ -77,69 +71,40 @@ func (t *TimeRecordGrpcService) RefuseTimeRecord(ctx context.Context, in *pb.Ref
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling RefuseTimeRecord request")
 
-	timeRecord, err := t.TimeRecordService.Refuse(ctx, in.Id, in.RefusedReason, t.AuthInterceptor.Claims.EmployeeID)
+	err := t.TimeRecordService.RefuseTimeRecord(ctx, in.Id, in.RefusedReason, t.AuthInterceptor.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
 		return &pb.StatusResponse{
-			Status: "not updated",
-			Error:  err.Error(),
+			Code:    uint32(status.Code(err)),
+			Message: "not updated",
+			Error:   err.Error(),
 		}, err
 	}
-	log.WithField("timeRecord", timeRecord).Info("timeRecord refused")
 
 	return &pb.StatusResponse{
-		Status: "successfully " + timeRecord.Status.String(),
+		Code:    uint32(codes.OK),
+		Message: "successfully " + entity.REFUSED.String(),
 	}, nil
 }
 
-func (t *TimeRecordGrpcService) FindTimeRecord(ctx context.Context, in *pb.FindTimeRecordRequest) (*pb.TimeRecord, error) {
+func (t *TimeRecordGrpcService) FindTimeRecord(ctx context.Context, in *pb.FindTimeRecordRequest) (*pb.FindTimeRecordResponse, error) {
 	span, ctx := apm.StartSpan(ctx, "FindTimeRecord", "gRPC application")
 	defer span.End()
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling FindTimeRecord request")
 
-	timeRecord, err := t.TimeRecordService.Find(ctx, in.Id)
+	timeRecord, err := t.TimeRecordService.FindTimeRecord(ctx, in.Id)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
-		return &pb.TimeRecord{}, err
+		return &pb.FindTimeRecordResponse{}, err
 	}
 	log.WithField("timeRecord", timeRecord).Info("timeRecord finded")
 
-	return &pb.TimeRecord{
-		Id:            timeRecord.ID,
-		Time:          timestamppb.New(timeRecord.Time),
-		Status:        pb.TimeRecord_Status(timeRecord.Status),
-		Description:   timeRecord.Description,
-		RefusedReason: timeRecord.RefusedReason,
-		RegularTime:   timeRecord.RegularTime,
-		EmployeeId:    timeRecord.EmployeeID,
-		ApprovedBy:    timeRecord.ApprovedBy,
-		RefusedBy:     timeRecord.RefusedBy,
-		CreatedAt:     timestamppb.New(timeRecord.CreatedAt),
-		UpdatedAt:     timestamppb.New(timeRecord.UpdatedAt),
-	}, nil
-}
-
-func (t *TimeRecordGrpcService) SearchTimeRecords(in *pb.SearchTimeRecordsRequest, stream pb.TimeRecordService_SearchTimeRecordsServer) error {
-	span, ctx := apm.StartSpan(stream.Context(), "SearchTimeRecords", "gRPC application")
-	defer span.End()
-
-	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
-	log.WithField("in", in).Info("handling SearchTimeRecords request")
-
-	timeRecords, err := t.TimeRecordService.FindAllByEmployeeID(ctx, in.EmployeeId, in.FromDate.AsTime(), in.ToDate.AsTime())
-	if err != nil {
-		log.WithError(err)
-		apm.CaptureError(ctx, err).Send()
-		return err
-	}
-	log.WithField("timeRecords", timeRecords).Info("timeRecords searched")
-
-	for _, timeRecord := range timeRecords {
-		stream.Send(&pb.TimeRecord{
+	return &pb.FindTimeRecordResponse{
+		TimeRecord: &pb.TimeRecord{
 			Id:            timeRecord.ID,
 			Time:          timestamppb.New(timeRecord.Time),
 			Status:        pb.TimeRecord_Status(timeRecord.Status),
@@ -151,26 +116,24 @@ func (t *TimeRecordGrpcService) SearchTimeRecords(in *pb.SearchTimeRecordsReques
 			RefusedBy:     timeRecord.RefusedBy,
 			CreatedAt:     timestamppb.New(timeRecord.CreatedAt),
 			UpdatedAt:     timestamppb.New(timeRecord.UpdatedAt),
-		})
-	}
-
-	return nil
+		},
+	}, nil
 }
 
-func (t *TimeRecordGrpcService) ListTimeRecords(in *pb.ListTimeRecordsRequest, stream pb.TimeRecordService_ListTimeRecordsServer) error {
-	span, ctx := apm.StartSpan(stream.Context(), "ListTimeRecords", "gRPC application")
+func (t *TimeRecordGrpcService) SearchTimeRecords(in *pb.SearchTimeRecordsRequest, stream pb.TimeRecordService_SearchTimeRecordsServer) error {
+	span, ctx := apm.StartSpan(stream.Context(), "SearchTimeRecords", "gRPC application")
 	defer span.End()
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
-	log.WithField("in", in).Info("handling ListTimeRecords request")
+	log.WithField("in", in).Info("handling SearchTimeRecords request")
 
-	timeRecords, err := t.TimeRecordService.FindAllByEmployeeID(ctx, t.AuthInterceptor.Claims.EmployeeID, in.FromDate.AsTime(), in.ToDate.AsTime())
+	timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, in.EmployeeId, in.FromDate.AsTime(), in.ToDate.AsTime())
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
 		return err
 	}
-	log.WithField("timeRecords", timeRecords).Info("timeRecords listed")
+	log.WithField("timeRecords", timeRecords).Info("timeRecords searched")
 
 	for _, timeRecord := range timeRecords {
 		stream.Send(&pb.TimeRecord{
