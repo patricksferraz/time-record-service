@@ -3,7 +3,7 @@ package rest
 import "time"
 
 type Base struct {
-	ID        string    `json:"id,omitempty" binding:"required,uuid"`
+	ID        string    `json:"id,omitempty" binding:"uuid"`
 	CreatedAt time.Time `json:"created_at,omitempty" time_format:"RFC3339"`
 	UpdatedAt time.Time `json:"updated_at,omitempty" time_format:"RFC3339"`
 }
@@ -21,6 +21,7 @@ type TimeRecord struct {
 	Description   string    `json:"description,omitempty"`
 	RefusedReason string    `json:"refused_reason,omitempty"`
 	RegularTime   bool      `json:"regular_time,omitempty"`
+	TzOffset      int       `json:"tz_offset,omitempty"`
 	EmployeeID    string    `json:"employee_id,omitempty"`
 	ApprovedBy    string    `json:"approved_by,omitempty"`
 	RefusedBy     string    `json:"refused_by,omitempty"`
@@ -41,11 +42,11 @@ type ID struct {
 }
 
 type RefuseRequest struct {
-	RefusedReason string `json:"refused_reason"`
+	RefusedReason string `json:"refused_reason" binding:"required"`
 }
 
 type TimeRecordsRequest struct {
-	EmployeeID string    `json:"employee_id,omitempty" binding:"required,uuid"`
+	EmployeeID string    `json:"employee_id,omitempty" form:"employee_id" binding:"required,uuid"`
 	FromDate   time.Time `json:"from_date" form:"from_date" binding:"required"`
 	ToDate     time.Time `json:"to_date" form:"to_date" binding:"required"`
 }

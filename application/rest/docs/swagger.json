@@ -34,13 +34,6 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Employee ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "name": "employee_id",
                         "in": "query",
                         "required": true
@@ -333,6 +326,9 @@
         },
         "rest.RefuseRequest": {
             "type": "object",
+            "required": [
+                "refused_reason"
+            ],
             "properties": {
                 "refused_reason": {
                     "type": "string"
@@ -341,9 +337,6 @@
         },
         "rest.TimeRecord": {
             "type": "object",
-            "required": [
-                "id"
-            ],
             "properties": {
                 "approved_by": {
                     "type": "string"
@@ -374,6 +367,9 @@
                 },
                 "time": {
                     "type": "string"
+                },
+                "tz_offset": {
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "string"

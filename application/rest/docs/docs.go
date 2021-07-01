@@ -50,13 +50,6 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Employee ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "name": "employee_id",
                         "in": "query",
                         "required": true
@@ -349,6 +342,9 @@ var doc = `{
         },
         "rest.RefuseRequest": {
             "type": "object",
+            "required": [
+                "refused_reason"
+            ],
             "properties": {
                 "refused_reason": {
                     "type": "string"
@@ -357,9 +353,6 @@ var doc = `{
         },
         "rest.TimeRecord": {
             "type": "object",
-            "required": [
-                "id"
-            ],
             "properties": {
                 "approved_by": {
                     "type": "string"
@@ -390,6 +383,9 @@ var doc = `{
                 },
                 "time": {
                     "type": "string"
+                },
+                "tz_offset": {
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "string"

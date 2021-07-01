@@ -1,9 +1,0 @@
-apm-server.frontend.enabled: true
-apm-server.host: "0.0.0.0:8200"
-
-apm-server.rum.enabled: true
-apm-server.kibana.enabled: true
-apm-server.kibana.host: kibana:5601
-setup.kibana.host: kibana:5601
-setup.template.settings.index.number_of_replicas: 0
-output.elasticsearch.hosts: ["elasticsearch:9200"]

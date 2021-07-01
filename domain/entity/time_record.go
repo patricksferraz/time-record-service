@@ -16,10 +16,11 @@ func init() {
 type TimeRecord struct {
 	Base          `bson:",inline" valid:"-"`
 	Time          time.Time        `json:"time,omitempty" bson:"time" valid:"required"`
-	Status        TimeRecordStatus `json:"status,omitempty" bson:"status" valid:"timeRecordStatus,optional"`
+	Status        TimeRecordStatus `json:"status" bson:"status" valid:"timeRecordStatus,optional"`
 	Description   string           `json:"description,omitempty" bson:"description,omitempty" valid:"-"`
 	RefusedReason string           `json:"refused_reason,omitempty" bson:"refused_reason,omitempty" valid:"-"`
-	RegularTime   bool             `json:"regular_time,omitempty" bson:"regular_time" valid:"-"`
+	RegularTime   bool             `json:"regular_time" bson:"regular_time" valid:"-"`
+	TzOffset      int              `json:"tz_offset,omitempty" bson:"tz_offset" valid:"int"`
 	EmployeeID    string           `json:"employee_id,omitempty" bson:"employee_id" valid:"uuid"`
 	ApprovedBy    string           `json:"approved_by,omitempty" bson:"approved_by,omitempty" valid:"-"`
 	RefusedBy     string           `json:"refused_by,omitempty" bson:"refused_by,omitempty" valid:"-"`
@@ -97,11 +98,13 @@ func (t *TimeRecord) Refuse(refusedBy, refusedReason string) error {
 
 func NewTimeRecord(_time time.Time, description, employeeID, createdBy string) (*TimeRecord, error) {
 
+	_, offset := _time.Zone()
 	timeRecord := TimeRecord{
 		Time:        _time,
 		Status:      APPROVED,
 		Description: description,
 		RegularTime: true,
+		TzOffset:    offset,
 		EmployeeID:  employeeID,
 		CreatedBy:   createdBy,
 	}
