@@ -11,19 +11,19 @@ import (
 
 type repository struct{}
 
-func (r *repository) Register(ctx context.Context, timeRecord *entity.TimeRecord) error {
+func (r *repository) RegisterTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) (*string, error) {
+	return new(string), nil
+}
+
+func (r *repository) SaveTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) error {
 	return nil
 }
 
-func (r *repository) Save(ctx context.Context, timeRecord *entity.TimeRecord) error {
-	return nil
-}
-
-func (r *repository) Find(ctx context.Context, id string) (*entity.TimeRecord, error) {
+func (r *repository) FindTimeRecord(ctx context.Context, id string) (*entity.TimeRecord, error) {
 	return &entity.TimeRecord{}, nil
 }
 
-func (r *repository) FindAllByEmployeeID(ctx context.Context, employeeID string, fromDate, toDate time.Time) ([]*entity.TimeRecord, error) {
+func (r *repository) SearchTimeRecords(ctx context.Context, employeeID string, fromDate, toDate time.Time) ([]*entity.TimeRecord, error) {
 	var timeRecords []*entity.TimeRecord
 	return timeRecords, nil
 }
