@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"testing"
-	"time"
 
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
 	"github.com/stretchr/testify/require"
@@ -23,9 +22,9 @@ func (r *repository) FindTimeRecord(ctx context.Context, id string) (*entity.Tim
 	return &entity.TimeRecord{}, nil
 }
 
-func (r *repository) SearchTimeRecords(ctx context.Context, employeeID string, fromDate, toDate time.Time) ([]*entity.TimeRecord, error) {
+func (r *repository) SearchTimeRecords(ctx context.Context, filter *entity.Filter) (*string, []*entity.TimeRecord, error) {
 	var timeRecords []*entity.TimeRecord
-	return timeRecords, nil
+	return nil, timeRecords, nil
 }
 
 func TestRepository_TimeRecordRepositoryInterface(t *testing.T) {
