@@ -18,25 +18,37 @@ definitions:
         example: a message
         type: string
     type: object
-  rest.ID:
-    properties:
-      id:
-        type: string
-    required:
-    - id
-    type: object
-  rest.RefuseRequest:
+  rest.RefuseTimeRecordRequest:
     properties:
       refused_reason:
         type: string
     required:
     - refused_reason
     type: object
+  rest.RegisterTimeRecordRequest:
+    properties:
+      description:
+        type: string
+      employee_id:
+        type: string
+      time:
+        type: string
+    required:
+    - employee_id
+    - time
+    type: object
+  rest.RegisterTimeRecordResponse:
+    properties:
+      id:
+        type: string
+    type: object
   rest.TimeRecord:
     properties:
       approved_by:
         type: string
       created_at:
+        type: string
+      created_by:
         type: string
       description:
         type: string
@@ -58,18 +70,6 @@ definitions:
         type: integer
       updated_at:
         type: string
-    type: object
-  rest.TimeRecordRequest:
-    properties:
-      description:
-        type: string
-      employee_id:
-        type: string
-      time:
-        type: string
-    required:
-    - employee_id
-    - time
     type: object
 info:
   contact:
@@ -132,14 +132,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/rest.TimeRecordRequest'
+          $ref: '#/definitions/rest.RegisterTimeRecordRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.ID'
+            $ref: '#/definitions/rest.RegisterTimeRecordResponse'
         "400":
           description: Bad Request
           schema:
@@ -234,7 +234,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/rest.RefuseRequest'
+          $ref: '#/definitions/rest.RefuseTimeRecordRequest'
       produces:
       - application/json
       responses:

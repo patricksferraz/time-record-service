@@ -116,7 +116,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.TimeRecordRequest"
+                            "$ref": "#/definitions/rest.RegisterTimeRecordRequest"
                         }
                     }
                 ],
@@ -124,7 +124,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.ID"
+                            "$ref": "#/definitions/rest.RegisterTimeRecordResponse"
                         }
                     },
                     "400": {
@@ -275,7 +275,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.RefuseRequest"
+                            "$ref": "#/definitions/rest.RefuseTimeRecordRequest"
                         }
                     }
                 ],
@@ -329,24 +329,39 @@ var doc = `{
                 }
             }
         },
-        "rest.ID": {
-            "type": "object",
-            "required": [
-                "id"
-            ],
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.RefuseRequest": {
+        "rest.RefuseTimeRecordRequest": {
             "type": "object",
             "required": [
                 "refused_reason"
             ],
             "properties": {
                 "refused_reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.RegisterTimeRecordRequest": {
+            "type": "object",
+            "required": [
+                "employee_id",
+                "time"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "employee_id": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.RegisterTimeRecordResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 }
             }
@@ -358,6 +373,9 @@ var doc = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
                     "type": "string"
                 },
                 "description": {
@@ -388,24 +406,6 @@ var doc = `{
                     "type": "integer"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.TimeRecordRequest": {
-            "type": "object",
-            "required": [
-                "employee_id",
-                "time"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "employee_id": {
-                    "type": "string"
-                },
-                "time": {
                     "type": "string"
                 }
             }
