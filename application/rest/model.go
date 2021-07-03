@@ -1,6 +1,8 @@
 package rest
 
-import "time"
+import (
+	"time"
+)
 
 type Base struct {
 	ID        string    `json:"id,omitempty" binding:"uuid"`
@@ -59,7 +61,18 @@ type RefuseTimeRecordRequest struct {
 }
 
 type SearchTimeRecordRequest struct {
-	EmployeeID string    `json:"employee_id,omitempty" form:"employee_id" binding:"required,uuid"`
-	FromDate   time.Time `json:"from_date" form:"from_date" binding:"required"`
-	ToDate     time.Time `json:"to_date" form:"to_date" binding:"required"`
+	FromDate   time.Time `json:"from_date" form:"from_date"`
+	ToDate     time.Time `json:"to_date" form:"to_date"`
+	Status     int       `json:"status" form:"status"`
+	EmployeeID string    `json:"employee_id" form:"employee_id"`
+	ApprovedBy string    `json:"approved_by" form:"approved_by"`
+	RefusedBy  string    `json:"refused_by" form:"refused_by"`
+	CreatedBy  string    `json:"created_by" form:"created_by"`
+	PageSize   int       `json:"page_size" form:"page_size" default:"10"`
+	PageToken  string    `json:"page_token" form:"page_token"`
+}
+
+type SearchTimeRecordResponse struct {
+	NextPageToken string       `json:"next_page_token"`
+	TimeRecords   []TimeRecord `json:"time_records"`
 }

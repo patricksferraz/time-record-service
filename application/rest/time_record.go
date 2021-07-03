@@ -244,14 +244,14 @@ func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 
 // SearchTimeRecords godoc
 // @Security ApiKeyAuth
-// @Summary search time records by employee id
+// @Summary search time records by filter
 // @ID searchTimeRecords
 // @Tags Time Record
-// @Description Search for employee time records by `id`
+// @Description Search for employee time records by `filter`
 // @Accept json
 // @Produce json
 // @Param body query SearchTimeRecordRequest true "JSON body for search time records"
-// @Success 200 {array} TimeRecord
+// @Success 200 {array} SearchTimeRecordResponse
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records [get]
@@ -274,7 +274,7 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("query", body).Info("query TimeRecords request")
 
-	timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, body.EmployeeID, body.FromDate, body.ToDate)
+	nextPageToken, timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.PageSize, body.PageToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -289,7 +289,13 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("timeRecords", timeRecords).Info("timeRecords searched")
 
-	ctx.JSON(http.StatusOK, timeRecords)
+	ctx.JSON(
+		http.StatusOK,
+		gin.H{
+			"next_page_token": *nextPageToken,
+			"time_records":    timeRecords,
+		},
+	)
 }
 
 func NewTimeRecordRestService(service *service.TimeRecordService, authMiddleware *AuthMiddleware) *TimeRecordRestService {

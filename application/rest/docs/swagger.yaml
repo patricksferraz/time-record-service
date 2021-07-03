@@ -42,6 +42,15 @@ definitions:
       id:
         type: string
     type: object
+  rest.SearchTimeRecordResponse:
+    properties:
+      next_page_token:
+        type: string
+      time_records:
+        items:
+          $ref: '#/definitions/rest.TimeRecord'
+        type: array
+    type: object
   rest.TimeRecord:
     properties:
       approved_by:
@@ -84,20 +93,36 @@ paths:
     get:
       consumes:
       - application/json
-      description: Search for employee time records by `id`
+      description: Search for employee time records by `filter`
       operationId: searchTimeRecords
       parameters:
       - in: query
+        name: approved_by
+        type: string
+      - in: query
+        name: created_by
+        type: string
+      - in: query
         name: employee_id
-        required: true
         type: string
       - in: query
         name: from_date
-        required: true
+        type: string
+      - default: 10
+        in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: page_token
         type: string
       - in: query
+        name: refused_by
+        type: string
+      - in: query
+        name: status
+        type: integer
+      - in: query
         name: to_date
-        required: true
         type: string
       produces:
       - application/json
@@ -106,7 +131,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/rest.TimeRecord'
+              $ref: '#/definitions/rest.SearchTimeRecordResponse'
             type: array
         "400":
           description: Bad Request
@@ -118,7 +143,7 @@ paths:
             $ref: '#/definitions/rest.HTTPError'
       security:
       - ApiKeyAuth: []
-      summary: search time records by employee id
+      summary: search time records by filter
       tags:
       - Time Record
     post:

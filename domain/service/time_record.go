@@ -120,20 +120,27 @@ func (p *TimeRecordService) FindTimeRecord(ctx context.Context, id string) (*ent
 	return timeRecord, nil
 }
 
-func (p *TimeRecordService) SearchTimeRecords(ctx context.Context, employeeID string, fromDate, toDate time.Time) ([]*entity.TimeRecord, error) {
+func (p *TimeRecordService) SearchTimeRecords(ctx context.Context, fromDate, toDate time.Time, status int, employeeID, approvedBy, refusedBy, createdBy string, pageSize int, pageToken string) (*string, []*entity.TimeRecord, error) {
 	span, ctx := apm.StartSpan(ctx, "FindAllByEmployeeID", "time record domain service")
 	defer span.End()
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
-	timeRecords, err := p.TimeRecordRepository.SearchTimeRecords(ctx, employeeID, fromDate, toDate)
+	filter, err := entity.NewFilter(fromDate, toDate, status, employeeID, approvedBy, refusedBy, createdBy, pageSize, pageToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
-		return nil, err
+		return nil, nil, err
+	}
+
+	nextPageToken, timeRecords, err := p.TimeRecordRepository.SearchTimeRecords(ctx, filter)
+	if err != nil {
+		log.WithError(err)
+		apm.CaptureError(ctx, err).Send()
+		return nil, nil, err
 	}
 	log.WithField("timeRecords", timeRecords).Info("timeRecords finded")
-	return timeRecords, nil
+	return nextPageToken, timeRecords, nil
 }
 
 func NewTimeRecordService(timeRecordRepository repository.TimeRecordRepositoryInterface) *TimeRecordService {

@@ -22,7 +22,7 @@ type TimeRecordServiceClient interface {
 	ApproveTimeRecord(ctx context.Context, in *ApproveTimeRecordRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 	RefuseTimeRecord(ctx context.Context, in *RefuseTimeRecordRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 	FindTimeRecord(ctx context.Context, in *FindTimeRecordRequest, opts ...grpc.CallOption) (*FindTimeRecordResponse, error)
-	SearchTimeRecords(ctx context.Context, in *SearchTimeRecordsRequest, opts ...grpc.CallOption) (TimeRecordService_SearchTimeRecordsClient, error)
+	SearchTimeRecords(ctx context.Context, in *SearchTimeRecordsRequest, opts ...grpc.CallOption) (*SearchTimeRecordsResponse, error)
 }
 
 type timeRecordServiceClient struct {
@@ -69,36 +69,13 @@ func (c *timeRecordServiceClient) FindTimeRecord(ctx context.Context, in *FindTi
 	return out, nil
 }
 
-func (c *timeRecordServiceClient) SearchTimeRecords(ctx context.Context, in *SearchTimeRecordsRequest, opts ...grpc.CallOption) (TimeRecordService_SearchTimeRecordsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TimeRecordService_ServiceDesc.Streams[0], "/dev.azure.com.c4ut.TimeClock.TimeRecordService/SearchTimeRecords", opts...)
+func (c *timeRecordServiceClient) SearchTimeRecords(ctx context.Context, in *SearchTimeRecordsRequest, opts ...grpc.CallOption) (*SearchTimeRecordsResponse, error) {
+	out := new(SearchTimeRecordsResponse)
+	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.TimeRecordService/SearchTimeRecords", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &timeRecordServiceSearchTimeRecordsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type TimeRecordService_SearchTimeRecordsClient interface {
-	Recv() (*TimeRecord, error)
-	grpc.ClientStream
-}
-
-type timeRecordServiceSearchTimeRecordsClient struct {
-	grpc.ClientStream
-}
-
-func (x *timeRecordServiceSearchTimeRecordsClient) Recv() (*TimeRecord, error) {
-	m := new(TimeRecord)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // TimeRecordServiceServer is the server API for TimeRecordService service.
@@ -109,7 +86,7 @@ type TimeRecordServiceServer interface {
 	ApproveTimeRecord(context.Context, *ApproveTimeRecordRequest) (*StatusResponse, error)
 	RefuseTimeRecord(context.Context, *RefuseTimeRecordRequest) (*StatusResponse, error)
 	FindTimeRecord(context.Context, *FindTimeRecordRequest) (*FindTimeRecordResponse, error)
-	SearchTimeRecords(*SearchTimeRecordsRequest, TimeRecordService_SearchTimeRecordsServer) error
+	SearchTimeRecords(context.Context, *SearchTimeRecordsRequest) (*SearchTimeRecordsResponse, error)
 	mustEmbedUnimplementedTimeRecordServiceServer()
 }
 
@@ -129,8 +106,8 @@ func (UnimplementedTimeRecordServiceServer) RefuseTimeRecord(context.Context, *R
 func (UnimplementedTimeRecordServiceServer) FindTimeRecord(context.Context, *FindTimeRecordRequest) (*FindTimeRecordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindTimeRecord not implemented")
 }
-func (UnimplementedTimeRecordServiceServer) SearchTimeRecords(*SearchTimeRecordsRequest, TimeRecordService_SearchTimeRecordsServer) error {
-	return status.Errorf(codes.Unimplemented, "method SearchTimeRecords not implemented")
+func (UnimplementedTimeRecordServiceServer) SearchTimeRecords(context.Context, *SearchTimeRecordsRequest) (*SearchTimeRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchTimeRecords not implemented")
 }
 func (UnimplementedTimeRecordServiceServer) mustEmbedUnimplementedTimeRecordServiceServer() {}
 
@@ -217,25 +194,22 @@ func _TimeRecordService_FindTimeRecord_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TimeRecordService_SearchTimeRecords_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(SearchTimeRecordsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _TimeRecordService_SearchTimeRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchTimeRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(TimeRecordServiceServer).SearchTimeRecords(m, &timeRecordServiceSearchTimeRecordsServer{stream})
-}
-
-type TimeRecordService_SearchTimeRecordsServer interface {
-	Send(*TimeRecord) error
-	grpc.ServerStream
-}
-
-type timeRecordServiceSearchTimeRecordsServer struct {
-	grpc.ServerStream
-}
-
-func (x *timeRecordServiceSearchTimeRecordsServer) Send(m *TimeRecord) error {
-	return x.ServerStream.SendMsg(m)
+	if interceptor == nil {
+		return srv.(TimeRecordServiceServer).SearchTimeRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.azure.com.c4ut.TimeClock.TimeRecordService/SearchTimeRecords",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TimeRecordServiceServer).SearchTimeRecords(ctx, req.(*SearchTimeRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // TimeRecordService_ServiceDesc is the grpc.ServiceDesc for TimeRecordService service.
@@ -261,13 +235,11 @@ var TimeRecordService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "FindTimeRecord",
 			Handler:    _TimeRecordService_FindTimeRecord_Handler,
 		},
-	},
-	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "SearchTimeRecords",
-			Handler:       _TimeRecordService_SearchTimeRecords_Handler,
-			ServerStreams: true,
+			MethodName: "SearchTimeRecords",
+			Handler:    _TimeRecordService_SearchTimeRecords_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "time_record.proto",
 }
