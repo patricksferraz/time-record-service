@@ -1,6 +1,8 @@
 package rest
 
-import "time"
+import (
+	"time"
+)
 
 type Base struct {
 	ID        string    `json:"id,omitempty" binding:"uuid"`
@@ -8,10 +10,14 @@ type Base struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty" time_format:"RFC3339"`
 }
 
-type TimeRecordRequest struct {
+type RegisterTimeRecordRequest struct {
 	EmployeeID  string    `json:"employee_id,omitempty" binding:"required,uuid"`
 	Time        time.Time `json:"time,omitempty" time_format:"RFC3339" binding:"required"`
 	Description string    `json:"description,omitempty"`
+}
+
+type RegisterTimeRecordResponse struct {
+	ID string `json:"id" binding:"uuid"`
 }
 
 type TimeRecord struct {
@@ -25,6 +31,7 @@ type TimeRecord struct {
 	EmployeeID    string    `json:"employee_id,omitempty"`
 	ApprovedBy    string    `json:"approved_by,omitempty"`
 	RefusedBy     string    `json:"refused_by,omitempty"`
+	CreatedBy     string    `json:"created_by,omitempty"`
 }
 
 type HTTPResponse struct {
@@ -37,16 +44,35 @@ type HTTPError struct {
 	Error string `json:"error,omitempty" example:"status bad request"`
 }
 
-type ID struct {
+type ApproveTimeRecordRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-type RefuseRequest struct {
+type FindTimeRecordRequest struct {
+	ID string `uri:"id" binding:"required,uuid"`
+}
+
+type IDRequest struct {
+	ID string `uri:"id" binding:"required,uuid"`
+}
+
+type RefuseTimeRecordRequest struct {
 	RefusedReason string `json:"refused_reason" binding:"required"`
 }
 
-type TimeRecordsRequest struct {
-	EmployeeID string    `json:"employee_id,omitempty" form:"employee_id" binding:"required,uuid"`
-	FromDate   time.Time `json:"from_date" form:"from_date" binding:"required"`
-	ToDate     time.Time `json:"to_date" form:"to_date" binding:"required"`
+type SearchTimeRecordRequest struct {
+	FromDate   time.Time `json:"from_date" form:"from_date"`
+	ToDate     time.Time `json:"to_date" form:"to_date"`
+	Status     int       `json:"status" form:"status"`
+	EmployeeID string    `json:"employee_id" form:"employee_id"`
+	ApprovedBy string    `json:"approved_by" form:"approved_by"`
+	RefusedBy  string    `json:"refused_by" form:"refused_by"`
+	CreatedBy  string    `json:"created_by" form:"created_by"`
+	PageSize   int       `json:"page_size" form:"page_size" default:"10"`
+	PageToken  string    `json:"page_token" form:"page_token"`
+}
+
+type SearchTimeRecordResponse struct {
+	NextPageToken string       `json:"next_page_token"`
+	TimeRecords   []TimeRecord `json:"time_records"`
 }

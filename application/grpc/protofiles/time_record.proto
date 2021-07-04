@@ -39,16 +39,28 @@ message FindTimeRecordResponse {
 }
 
 message SearchTimeRecordsRequest {
-    string employee_id = 1;
-    google.protobuf.Timestamp from_date = 2;
-    google.protobuf.Timestamp to_date = 3;
+    google.protobuf.Timestamp from_date = 1;
+    google.protobuf.Timestamp to_date = 2;
+    int32 status = 3;
+    string employee_id = 4;
+    string approved_by = 5;
+    string refused_by = 6;
+    string created_by = 7;
+    int64 page_size = 8;
+    string page_token = 9;
+}
+
+message SearchTimeRecordsResponse {
+    repeated TimeRecord time_records = 1;
+    string next_page_token = 2;
 }
 
 message TimeRecord {
     enum Status {
-        PENDING = 0;
-		APPROVED = 1;
-        REFUSED = 2;
+        STATUS_UNSPECIFIED = 0;
+        PENDING = 1;
+		APPROVED = 2;
+        REFUSED = 3;
     }
 
     string id = 1;
@@ -57,7 +69,7 @@ message TimeRecord {
     string description = 4;
     string refused_reason = 5;
     bool regular_time = 6;
-    int64 tz_offset = 7;
+    int32 tz_offset = 7;
     string employee_id = 8;
     string approved_by = 9;
     string refused_by = 10;
@@ -70,5 +82,5 @@ service TimeRecordService {
     rpc ApproveTimeRecord (ApproveTimeRecordRequest) returns (StatusResponse);
     rpc RefuseTimeRecord (RefuseTimeRecordRequest) returns (StatusResponse);
     rpc FindTimeRecord (FindTimeRecordRequest) returns (FindTimeRecordResponse);
-    rpc SearchTimeRecords (SearchTimeRecordsRequest) returns (stream TimeRecord);
+    rpc SearchTimeRecords (SearchTimeRecordsRequest) returns (SearchTimeRecordsResponse);
 }

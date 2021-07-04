@@ -80,30 +80,30 @@ func TestRepository_FindTimeRecord(t *testing.T) {
 	require.Empty(t, timeRecordDb.UpdatedAt)
 }
 
-func TestRepository_SearchTimeRecords(t *testing.T) {
+// func TestRepository_SearchTimeRecords(t *testing.T) {
 
-	ctx := context.Background()
-	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	dbName := utils.GetEnv("DB_NAME", "test")
-	_db, _ := db.NewMongo(ctx, uri, dbName)
-	repository := repository.NewTimeRecordRepository(_db)
+// 	ctx := context.Background()
+// 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
+// 	dbName := utils.GetEnv("DB_NAME", "test")
+// 	_db, _ := db.NewMongo(ctx, uri, dbName)
+// 	repository := repository.NewTimeRecordRepository(_db)
 
-	now := time.Now()
-	description := faker.Lorem().Sentence(10)
-	employeeID := uuid.NewV4().String()
-	timeRecord, _ := entity.NewTimeRecord(now, description, employeeID, employeeID)
+// 	now := time.Now()
+// 	description := faker.Lorem().Sentence(10)
+// 	employeeID := uuid.NewV4().String()
+// 	timeRecord, _ := entity.NewTimeRecord(now, description, employeeID, employeeID)
 
-	repository.RegisterTimeRecord(ctx, timeRecord)
+// 	repository.RegisterTimeRecord(ctx, timeRecord)
 
-	timeRecordsDb, err := repository.SearchTimeRecords(ctx, timeRecord.EmployeeID, now, now)
-	require.Nil(t, err)
-	require.Equal(t, timeRecord.ID, timeRecordsDb[0].ID)
-	require.Equal(t, timeRecord.Time.Unix(), timeRecordsDb[0].Time.Unix())
-	require.Equal(t, timeRecord.Status, timeRecordsDb[0].Status)
-	require.Equal(t, timeRecord.Description, timeRecordsDb[0].Description)
-	require.Equal(t, timeRecord.RegularTime, timeRecordsDb[0].RegularTime)
-	require.Equal(t, timeRecord.EmployeeID, timeRecordsDb[0].EmployeeID)
-	require.Equal(t, timeRecord.ApprovedBy, timeRecordsDb[0].ApprovedBy)
-	require.NotEmpty(t, timeRecordsDb[0].CreatedAt)
-	require.Empty(t, timeRecordsDb[0].UpdatedAt)
-}
+// 	timeRecordsDb, err := repository.SearchTimeRecords(ctx, timeRecord.EmployeeID, now, now)
+// 	require.Nil(t, err)
+// 	require.Equal(t, timeRecord.ID, timeRecordsDb[0].ID)
+// 	require.Equal(t, timeRecord.Time.Unix(), timeRecordsDb[0].Time.Unix())
+// 	require.Equal(t, timeRecord.Status, timeRecordsDb[0].Status)
+// 	require.Equal(t, timeRecord.Description, timeRecordsDb[0].Description)
+// 	require.Equal(t, timeRecord.RegularTime, timeRecordsDb[0].RegularTime)
+// 	require.Equal(t, timeRecord.EmployeeID, timeRecordsDb[0].EmployeeID)
+// 	require.Equal(t, timeRecord.ApprovedBy, timeRecordsDb[0].ApprovedBy)
+// 	require.NotEmpty(t, timeRecordsDb[0].CreatedAt)
+// 	require.Empty(t, timeRecordsDb[0].UpdatedAt)
+// }

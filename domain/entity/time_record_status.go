@@ -16,7 +16,7 @@ func init() {
 type TimeRecordStatus int
 
 const (
-	PENDING TimeRecordStatus = iota
+	PENDING TimeRecordStatus = iota + 1
 	APPROVED
 	REFUSED
 )

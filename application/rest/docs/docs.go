@@ -35,7 +35,7 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Search for employee time records by ` + "`" + `id` + "`" + `",
+                "description": "Search for employee time records by ` + "`" + `filter` + "`" + `",
                 "consumes": [
                     "application/json"
                 ],
@@ -45,26 +45,54 @@ var doc = `{
                 "tags": [
                     "Time Record"
                 ],
-                "summary": "search time records by employee id",
+                "summary": "search time records by filter",
                 "operationId": "searchTimeRecords",
                 "parameters": [
                     {
                         "type": "string",
+                        "name": "approved_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "created_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "employee_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "name": "from_date",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "page_token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "refused_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "status",
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "name": "to_date",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -73,7 +101,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/rest.TimeRecord"
+                                "$ref": "#/definitions/rest.SearchTimeRecordResponse"
                             }
                         }
                     },
@@ -116,7 +144,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.TimeRecordRequest"
+                            "$ref": "#/definitions/rest.RegisterTimeRecordRequest"
                         }
                     }
                 ],
@@ -124,7 +152,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.ID"
+                            "$ref": "#/definitions/rest.RegisterTimeRecordResponse"
                         }
                     },
                     "400": {
@@ -275,7 +303,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.RefuseRequest"
+                            "$ref": "#/definitions/rest.RefuseTimeRecordRequest"
                         }
                     }
                 ],
@@ -329,18 +357,7 @@ var doc = `{
                 }
             }
         },
-        "rest.ID": {
-            "type": "object",
-            "required": [
-                "id"
-            ],
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.RefuseRequest": {
+        "rest.RefuseTimeRecordRequest": {
             "type": "object",
             "required": [
                 "refused_reason"
@@ -351,6 +368,46 @@ var doc = `{
                 }
             }
         },
+        "rest.RegisterTimeRecordRequest": {
+            "type": "object",
+            "required": [
+                "employee_id",
+                "time"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "employee_id": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.RegisterTimeRecordResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.SearchTimeRecordResponse": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "time_records": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rest.TimeRecord"
+                    }
+                }
+            }
+        },
         "rest.TimeRecord": {
             "type": "object",
             "properties": {
@@ -358,6 +415,9 @@ var doc = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
                     "type": "string"
                 },
                 "description": {
@@ -388,24 +448,6 @@ var doc = `{
                     "type": "integer"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.TimeRecordRequest": {
-            "type": "object",
-            "required": [
-                "employee_id",
-                "time"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "employee_id": {
-                    "type": "string"
-                },
-                "time": {
                     "type": "string"
                 }
             }

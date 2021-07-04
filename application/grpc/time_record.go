@@ -111,7 +111,7 @@ func (t *TimeRecordGrpcService) FindTimeRecord(ctx context.Context, in *pb.FindT
 			Description:   timeRecord.Description,
 			RefusedReason: timeRecord.RefusedReason,
 			RegularTime:   timeRecord.RegularTime,
-			TzOffset:      int64(timeRecord.TzOffset),
+			TzOffset:      int32(timeRecord.TzOffset),
 			EmployeeId:    timeRecord.EmployeeID,
 			ApprovedBy:    timeRecord.ApprovedBy,
 			RefusedBy:     timeRecord.RefusedBy,
@@ -121,39 +121,43 @@ func (t *TimeRecordGrpcService) FindTimeRecord(ctx context.Context, in *pb.FindT
 	}, nil
 }
 
-func (t *TimeRecordGrpcService) SearchTimeRecords(in *pb.SearchTimeRecordsRequest, stream pb.TimeRecordService_SearchTimeRecordsServer) error {
-	span, ctx := apm.StartSpan(stream.Context(), "SearchTimeRecords", "gRPC application")
+func (t *TimeRecordGrpcService) SearchTimeRecords(ctx context.Context, in *pb.SearchTimeRecordsRequest) (*pb.SearchTimeRecordsResponse, error) {
+	span, ctx := apm.StartSpan(ctx, "SearchTimeRecords", "gRPC application")
 	defer span.End()
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling SearchTimeRecords request")
 
-	timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, in.EmployeeId, in.FromDate.AsTime(), in.ToDate.AsTime())
+	nextPageToken, timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, in.FromDate.AsTime(), in.ToDate.AsTime(), int(in.Status), in.EmployeeId, in.ApprovedBy, in.RefusedBy, in.CreatedBy, int(in.PageSize), in.PageToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
-		return err
+		return &pb.SearchTimeRecordsResponse{}, err
 	}
 	log.WithField("timeRecords", timeRecords).Info("timeRecords searched")
 
+	var result []*pb.TimeRecord
 	for _, timeRecord := range timeRecords {
-		stream.Send(&pb.TimeRecord{
-			Id:            timeRecord.ID,
-			Time:          timestamppb.New(timeRecord.Time),
-			Status:        pb.TimeRecord_Status(timeRecord.Status),
-			Description:   timeRecord.Description,
-			RefusedReason: timeRecord.RefusedReason,
-			RegularTime:   timeRecord.RegularTime,
-			TzOffset:      int64(timeRecord.TzOffset),
-			EmployeeId:    timeRecord.EmployeeID,
-			ApprovedBy:    timeRecord.ApprovedBy,
-			RefusedBy:     timeRecord.RefusedBy,
-			CreatedAt:     timestamppb.New(timeRecord.CreatedAt),
-			UpdatedAt:     timestamppb.New(timeRecord.UpdatedAt),
-		})
+		result = append(
+			result,
+			&pb.TimeRecord{
+				Id:            timeRecord.ID,
+				Time:          timestamppb.New(timeRecord.Time),
+				Status:        pb.TimeRecord_Status(timeRecord.Status),
+				Description:   timeRecord.Description,
+				RefusedReason: timeRecord.RefusedReason,
+				RegularTime:   timeRecord.RegularTime,
+				TzOffset:      int32(timeRecord.TzOffset),
+				EmployeeId:    timeRecord.EmployeeID,
+				ApprovedBy:    timeRecord.ApprovedBy,
+				RefusedBy:     timeRecord.RefusedBy,
+				CreatedAt:     timestamppb.New(timeRecord.CreatedAt),
+				UpdatedAt:     timestamppb.New(timeRecord.UpdatedAt),
+			},
+		)
 	}
 
-	return nil
+	return &pb.SearchTimeRecordsResponse{NextPageToken: *nextPageToken, TimeRecords: result}, nil
 }
 
 func NewTimeRecordGrpcService(service *service.TimeRecordService, authInterceptor *AuthInterceptor) *TimeRecordGrpcService {

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
@@ -11,6 +10,7 @@ import (
 	"go.elastic.co/apm"
 	"go.elastic.co/apm/module/apmlogrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -43,7 +43,7 @@ func (t *TimeRecordRepository) SaveTimeRecord(ctx context.Context, timeRecord *e
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
 	collection := t.M.Database.Collection(collection.TimeRecordCollection)
-	res, err := collection.ReplaceOne(ctx, bson.M{"_id": timeRecord.ID}, timeRecord)
+	res, err := collection.ReplaceOne(ctx, bson.M{"id": timeRecord.ID}, timeRecord)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -62,7 +62,7 @@ func (t *TimeRecordRepository) FindTimeRecord(ctx context.Context, id string) (*
 
 	var timeRecord *entity.TimeRecord
 	collection := t.M.Database.Collection(collection.TimeRecordCollection)
-	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&timeRecord)
+	err := collection.FindOne(ctx, bson.M{"id": id}).Decode(&timeRecord)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -73,43 +73,85 @@ func (t *TimeRecordRepository) FindTimeRecord(ctx context.Context, id string) (*
 	return timeRecord, err
 }
 
-func (t *TimeRecordRepository) SearchTimeRecords(ctx context.Context, employeeID string, fromDate, toDate time.Time) ([]*entity.TimeRecord, error) {
+func (t *TimeRecordRepository) SearchTimeRecords(ctx context.Context, filter *entity.Filter) (*string, []*entity.TimeRecord, error) {
 	span, ctx := apm.StartSpan(ctx, "FindAllByEmployeeID", "repository")
 	defer span.End()
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
-	var timeRecords []*entity.TimeRecord
 	collection := t.M.Database.Collection(collection.TimeRecordCollection)
 
 	findOpts := options.Find()
-	findOpts.SetSort(bson.M{"time": -1})
-	cur, err := collection.Find(
-		ctx,
-		bson.M{
-			"employee_id": employeeID,
+	findOpts.SetLimit(int64(filter.PageSize))
+	findOpts.SetSort(bson.M{"_id": 1})
+
+	_t := []bson.M{}
+	if !filter.FromDate.IsZero() {
+		_t = append(_t, bson.M{
 			"time": bson.M{
-				"$gte": fromDate,
-				"$lte": toDate,
-			},
-		},
-		findOpts,
-	)
+				"$gte": filter.FromDate,
+			}})
+	}
+	if !filter.ToDate.IsZero() {
+		_t = append(_t, bson.M{
+			"time": bson.M{
+				"$lte": filter.ToDate,
+			}})
+	}
+
+	f := bson.M{}
+	if len(_t) > 0 {
+		f["$and"] = _t
+	}
+	if filter.Status != 0 {
+		f["status"] = filter.Status
+	}
+	if filter.EmployeeID != "" {
+		f["employee_id"] = filter.EmployeeID
+	}
+	if filter.ApprovedBy != "" {
+		f["approved_by"] = filter.ApprovedBy
+	}
+	if filter.RefusedBy != "" {
+		f["refused_by"] = filter.RefusedBy
+	}
+	if filter.CreatedBy != "" {
+		f["created_by"] = filter.CreatedBy
+	}
+	if filter.PageToken != "" {
+		token, err := primitive.ObjectIDFromHex(filter.PageToken)
+		if err != nil {
+			log.Fatal(err)
+		}
+		f["_id"] = bson.M{"$gt": token}
+	}
+
+	cur, err := collection.Find(ctx, f, findOpts)
 	log.WithField("findOpts", findOpts).Info("database findOpts")
 
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
-		return nil, err
+		return nil, nil, err
 	}
 
+	var fullBatch bool = true
+	if cur.RemainingBatchLength() < int(filter.PageSize) {
+		fullBatch = false
+	}
+
+	var nextPageToken string
+	var timeRecords []*entity.TimeRecord
 	for cur.Next(ctx) {
 		var timeRecord *entity.TimeRecord
 		err := cur.Decode(&timeRecord)
 		if err != nil {
 			log.WithError(err)
 			apm.CaptureError(ctx, err).Send()
-			return nil, err
+			return nil, nil, err
+		}
+		if cur.RemainingBatchLength() == 0 && fullBatch {
+			nextPageToken = cur.Current.Lookup("_id").ObjectID().Hex()
 		}
 		timeRecords = append(timeRecords, timeRecord)
 	}
@@ -118,12 +160,12 @@ func (t *TimeRecordRepository) SearchTimeRecords(ctx context.Context, employeeID
 	if err := cur.Err(); err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
-		return nil, err
+		return nil, nil, err
 	}
 
 	cur.Close(ctx)
 
-	return timeRecords, nil
+	return &nextPageToken, timeRecords, nil
 }
 
 func NewTimeRecordRepository(database *db.Mongo) *TimeRecordRepository {

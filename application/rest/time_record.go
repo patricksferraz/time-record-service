@@ -24,13 +24,13 @@ type TimeRecordRestService struct {
 // @Description Router for registration a new time record
 // @Accept json
 // @Produce json
-// @Param body body TimeRecordRequest true "JSON body for register a new time record"
-// @Success 200 {object} ID
+// @Param body body RegisterTimeRecordRequest true "JSON body for register a new time record"
+// @Success 200 {object} RegisterTimeRecordResponse
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records [post]
 func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
-	var req TimeRecordRequest
+	var req RegisterTimeRecordRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
@@ -63,7 +63,7 @@ func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("timeRecordID", timeRecordID).Info("timeRecordID registered")
 
-	ctx.JSON(http.StatusOK, ID{ID: *timeRecordID})
+	ctx.JSON(http.StatusOK, RegisterTimeRecordResponse{ID: *timeRecordID})
 }
 
 // ApproveTimeRecord godoc
@@ -80,7 +80,7 @@ func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 // @Failure 403 {object} HTTPError
 // @Router /time-records/{id}/approve [post]
 func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
-	var req ID
+	var req ApproveTimeRecordRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
@@ -130,14 +130,14 @@ func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Time Record ID"
-// @Param body body RefuseRequest true "JSON body for refuse a pending time record"
+// @Param body body RefuseTimeRecordRequest true "JSON body for refuse a pending time record"
 // @Success 200 {object} HTTPResponse
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records/{id}/refuse [post]
 func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
-	var uri ID
-	var body RefuseRequest
+	var uri IDRequest
+	var body RefuseTimeRecordRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
@@ -206,7 +206,7 @@ func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
 // @Failure 403 {object} HTTPError
 // @Router /time-records/{id} [get]
 func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
-	var req ID
+	var req FindTimeRecordRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
@@ -244,19 +244,19 @@ func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 
 // SearchTimeRecords godoc
 // @Security ApiKeyAuth
-// @Summary search time records by employee id
+// @Summary search time records by filter
 // @ID searchTimeRecords
 // @Tags Time Record
-// @Description Search for employee time records by `id`
+// @Description Search for employee time records by `filter`
 // @Accept json
 // @Produce json
-// @Param body query TimeRecordsRequest true "JSON body for search time records"
-// @Success 200 {array} TimeRecord
+// @Param body query SearchTimeRecordRequest true "JSON body for search time records"
+// @Success 200 {array} SearchTimeRecordResponse
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records [get]
 func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
-	var body TimeRecordsRequest
+	var body SearchTimeRecordRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
@@ -274,7 +274,7 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("query", body).Info("query TimeRecords request")
 
-	timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, body.EmployeeID, body.FromDate, body.ToDate)
+	nextPageToken, timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.PageSize, body.PageToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -289,7 +289,13 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("timeRecords", timeRecords).Info("timeRecords searched")
 
-	ctx.JSON(http.StatusOK, timeRecords)
+	ctx.JSON(
+		http.StatusOK,
+		gin.H{
+			"next_page_token": *nextPageToken,
+			"time_records":    timeRecords,
+		},
+	)
 }
 
 func NewTimeRecordRestService(service *service.TimeRecordService, authMiddleware *AuthMiddleware) *TimeRecordRestService {
