@@ -1,137 +1,122 @@
 package service_test
 
-import (
-	"context"
-	"log"
-	"testing"
-	"time"
+// func TestService_RegisterTimeRecord(t *testing.T) {
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/service"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/repository"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/utils"
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
-	"syreclabs.com/go/faker"
-)
+// 	ctx := context.Background()
+// 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
+// 	dbName := utils.GetEnv("DB_NAME", "test")
+// 	db, err := db.NewMongo(ctx, uri, dbName)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer db.Close(ctx)
+// 	defer db.Database.Drop(ctx)
 
-func TestService_RegisterTimeRecord(t *testing.T) {
+// 	timeRecordRepository := repository.NewTimeRecordRepository(db)
+// 	timeRecordService := service.NewTimeRecordService(timeRecordRepository)
 
-	ctx := context.Background()
-	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	dbName := utils.GetEnv("DB_NAME", "test")
-	db, err := db.NewMongo(ctx, uri, dbName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close(ctx)
-	defer db.Database.Drop(ctx)
+// 	_time := time.Now()
+// 	description := faker.Lorem().Sentence(10)
+// 	employeeID := uuid.NewV4().String()
+// 	timeRecordID, err := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
 
-	timeRecordRepository := repository.NewTimeRecordRepository(db)
-	timeRecordService := service.NewTimeRecordService(timeRecordRepository)
+// 	require.Nil(t, err)
+// 	require.NotEmpty(t, uuid.FromStringOrNil(*timeRecordID))
 
-	_time := time.Now()
-	description := faker.Lorem().Sentence(10)
-	employeeID := uuid.NewV4().String()
-	timeRecordID, err := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
+// 	_, err = timeRecordService.RegisterTimeRecord(ctx, _time.AddDate(0, 0, 1), description, employeeID, employeeID)
+// 	require.NotNil(t, err)
+// }
 
-	require.Nil(t, err)
-	require.NotEmpty(t, uuid.FromStringOrNil(*timeRecordID))
+// func TestService_ApproveTimeRecord(t *testing.T) {
 
-	_, err = timeRecordService.RegisterTimeRecord(ctx, _time.AddDate(0, 0, 1), description, employeeID, employeeID)
-	require.NotNil(t, err)
-}
+// 	ctx := context.Background()
+// 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
+// 	dbName := utils.GetEnv("DB_NAME", "test")
+// 	db, err := db.NewMongo(ctx, uri, dbName)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer db.Close(ctx)
+// 	defer db.Database.Drop(ctx)
 
-func TestService_ApproveTimeRecord(t *testing.T) {
+// 	timeRecordRepository := repository.NewTimeRecordRepository(db)
+// 	timeRecordService := service.NewTimeRecordService(timeRecordRepository)
 
-	ctx := context.Background()
-	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	dbName := utils.GetEnv("DB_NAME", "test")
-	db, err := db.NewMongo(ctx, uri, dbName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close(ctx)
-	defer db.Database.Drop(ctx)
+// 	_time := time.Now().AddDate(0, 0, -1)
+// 	description := faker.Lorem().Sentence(10)
+// 	employeeID := uuid.NewV4().String()
+// 	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
 
-	timeRecordRepository := repository.NewTimeRecordRepository(db)
-	timeRecordService := service.NewTimeRecordService(timeRecordRepository)
+// 	approvedBy := uuid.NewV4().String()
+// 	err = timeRecordService.ApproveTimeRecord(ctx, "", approvedBy)
+// 	require.NotNil(t, err)
+// 	err = timeRecordService.ApproveTimeRecord(ctx, *timeRecordID, "")
+// 	require.NotNil(t, err)
 
-	_time := time.Now().AddDate(0, 0, -1)
-	description := faker.Lorem().Sentence(10)
-	employeeID := uuid.NewV4().String()
-	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
+// 	err = timeRecordService.ApproveTimeRecord(ctx, *timeRecordID, approvedBy)
+// 	require.Nil(t, err)
+// }
 
-	approvedBy := uuid.NewV4().String()
-	err = timeRecordService.ApproveTimeRecord(ctx, "", approvedBy)
-	require.NotNil(t, err)
-	err = timeRecordService.ApproveTimeRecord(ctx, *timeRecordID, "")
-	require.NotNil(t, err)
+// func TestService_RefuseTimeRecord(t *testing.T) {
 
-	err = timeRecordService.ApproveTimeRecord(ctx, *timeRecordID, approvedBy)
-	require.Nil(t, err)
-}
+// 	ctx := context.Background()
+// 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
+// 	dbName := utils.GetEnv("DB_NAME", "test")
+// 	db, err := db.NewMongo(ctx, uri, dbName)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer db.Close(ctx)
+// 	defer db.Database.Drop(ctx)
 
-func TestService_RefuseTimeRecord(t *testing.T) {
+// 	timeRecordRepository := repository.NewTimeRecordRepository(db)
+// 	timeRecordService := service.NewTimeRecordService(timeRecordRepository)
 
-	ctx := context.Background()
-	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	dbName := utils.GetEnv("DB_NAME", "test")
-	db, err := db.NewMongo(ctx, uri, dbName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close(ctx)
-	defer db.Database.Drop(ctx)
+// 	_time := time.Now().AddDate(0, 0, -1)
+// 	description := faker.Lorem().Sentence(10)
+// 	employeeID := uuid.NewV4().String()
+// 	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
 
-	timeRecordRepository := repository.NewTimeRecordRepository(db)
-	timeRecordService := service.NewTimeRecordService(timeRecordRepository)
+// 	auditedBy := uuid.NewV4().String()
+// 	err = timeRecordService.RefuseTimeRecord(ctx, "", auditedBy, description)
+// 	require.NotNil(t, err)
+// 	err = timeRecordService.RefuseTimeRecord(ctx, *timeRecordID, "", description)
+// 	require.NotNil(t, err)
+// 	err = timeRecordService.RefuseTimeRecord(ctx, *timeRecordID, auditedBy, "")
+// 	require.NotNil(t, err)
 
-	_time := time.Now().AddDate(0, 0, -1)
-	description := faker.Lorem().Sentence(10)
-	employeeID := uuid.NewV4().String()
-	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
+// 	err = timeRecordService.RefuseTimeRecord(ctx, *timeRecordID, description, auditedBy)
+// 	require.Nil(t, err)
+// }
 
-	auditedBy := uuid.NewV4().String()
-	err = timeRecordService.RefuseTimeRecord(ctx, "", auditedBy, description)
-	require.NotNil(t, err)
-	err = timeRecordService.RefuseTimeRecord(ctx, *timeRecordID, "", description)
-	require.NotNil(t, err)
-	err = timeRecordService.RefuseTimeRecord(ctx, *timeRecordID, auditedBy, "")
-	require.NotNil(t, err)
+// func TestService_FindTimeRecord(t *testing.T) {
 
-	err = timeRecordService.RefuseTimeRecord(ctx, *timeRecordID, description, auditedBy)
-	require.Nil(t, err)
-}
+// 	ctx := context.Background()
+// 	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
+// 	dbName := utils.GetEnv("DB_NAME", "test")
+// 	db, err := db.NewMongo(ctx, uri, dbName)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer db.Close(ctx)
+// 	defer db.Database.Drop(ctx)
 
-func TestService_FindTimeRecord(t *testing.T) {
+// 	timeRecordRepository := repository.NewTimeRecordRepository(db)
+// 	timeRecordService := service.NewTimeRecordService(timeRecordRepository)
 
-	ctx := context.Background()
-	uri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	dbName := utils.GetEnv("DB_NAME", "test")
-	db, err := db.NewMongo(ctx, uri, dbName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close(ctx)
-	defer db.Database.Drop(ctx)
+// 	_time := time.Now().AddDate(0, 0, -1)
+// 	description := faker.Lorem().Sentence(10)
+// 	employeeID := uuid.NewV4().String()
+// 	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
 
-	timeRecordRepository := repository.NewTimeRecordRepository(db)
-	timeRecordService := service.NewTimeRecordService(timeRecordRepository)
-
-	_time := time.Now().AddDate(0, 0, -1)
-	description := faker.Lorem().Sentence(10)
-	employeeID := uuid.NewV4().String()
-	timeRecordID, _ := timeRecordService.RegisterTimeRecord(ctx, _time, description, employeeID, employeeID)
-
-	timeRecord, err := timeRecordService.FindTimeRecord(ctx, *timeRecordID)
-	require.Nil(t, err)
-	require.Equal(t, _time.Unix(), timeRecord.Time.Unix())
-	require.Equal(t, timeRecord.Description, description)
-	require.Equal(t, timeRecord.EmployeeID, employeeID)
-	_, err = timeRecordService.FindTimeRecord(ctx, "")
-	require.NotNil(t, err)
-}
+// 	timeRecord, err := timeRecordService.FindTimeRecord(ctx, *timeRecordID)
+// 	require.Nil(t, err)
+// 	require.Equal(t, _time.Unix(), timeRecord.Time.Unix())
+// 	require.Equal(t, timeRecord.Description, description)
+// 	require.Equal(t, timeRecord.EmployeeID, employeeID)
+// 	_, err = timeRecordService.FindTimeRecord(ctx, "")
+// 	require.NotNil(t, err)
+// }
 
 // func TestService_SearchTimeRecords(t *testing.T) {
 
