@@ -14,13 +14,13 @@ import (
 
 type TimeRecordService struct {
 	TimeRecordRepository repository.TimeRecordRepositoryInterface
-	EmployeeRepository   repository.EmployeeRepositoryInterface
+	EmployeeService      *EmployeeService
 }
 
-func NewTimeRecordService(timeRecordRepository repository.TimeRecordRepositoryInterface, employeeRepository repository.EmployeeRepositoryInterface) *TimeRecordService {
+func NewTimeRecordService(timeRecordRepository repository.TimeRecordRepositoryInterface, employeeService *EmployeeService) *TimeRecordService {
 	return &TimeRecordService{
 		TimeRecordRepository: timeRecordRepository,
-		EmployeeRepository:   employeeRepository,
+		EmployeeService:      employeeService,
 	}
 }
 
@@ -152,7 +152,7 @@ func (s *TimeRecordService) SearchTimeRecords(ctx context.Context, fromDate, toD
 	return nextPageToken, timeRecords, nil
 }
 
-func (s *TimeRecordService) ExportTimeRecords(ctx context.Context, fromDate, toDate time.Time, status int, employeeID, approvedBy, refusedBy, createdBy string, pageSize int, pageToken string) (*string, []*exporter.Register, error) {
+func (s *TimeRecordService) ExportTimeRecords(ctx context.Context, fromDate, toDate time.Time, status int, employeeID, approvedBy, refusedBy, createdBy string, pageSize int, pageToken, accessToken string) (*string, []*exporter.Register, error) {
 	filter, err := entity.NewFilter(fromDate, toDate, status, employeeID, approvedBy, refusedBy, createdBy, pageSize, pageToken)
 	if err != nil {
 		return nil, nil, err
@@ -172,7 +172,7 @@ func (s *TimeRecordService) ExportTimeRecords(ctx context.Context, fromDate, toD
 	// create employees with their own time records
 	var employees []*entity.Employee
 	for employeeID := range groupEmployeeTRs {
-		employee, err := s.EmployeeRepository.FindEmployee(ctx, employeeID)
+		employee, err := s.EmployeeService.FindEmployee(ctx, employeeID, accessToken)
 		if err != nil {
 			return nil, nil, err
 		}

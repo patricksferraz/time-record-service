@@ -38,7 +38,7 @@ message FindTimeRecordResponse {
     TimeRecord time_record = 1;
 }
 
-message SearchTimeRecordsRequest {
+message FilterTimeRecords {
     google.protobuf.Timestamp from_date = 1;
     google.protobuf.Timestamp to_date = 2;
     int32 status = 3;
@@ -48,6 +48,10 @@ message SearchTimeRecordsRequest {
     string created_by = 7;
     int64 page_size = 8;
     string page_token = 9;
+}
+
+message SearchTimeRecordsRequest {
+    FilterTimeRecords filter = 1;
 }
 
 message SearchTimeRecordsResponse {
@@ -77,10 +81,27 @@ message TimeRecord {
     google.protobuf.Timestamp updated_at = 12;
 }
 
+message ExportTimeRecordsRequest {
+    FilterTimeRecords filter = 1;
+
+    enum ExporterType {
+        EXPORTER_UNSPECIFIED = 0;
+        SECULLUM = 1;
+    }
+
+    ExporterType exporter_type = 2;
+}
+
+message ExportTimeRecordsResponse {
+    repeated string registers = 1;
+    string next_page_token = 2;
+}
+
 service TimeRecordService {
     rpc RegisterTimeRecord (RegisterTimeRecordRequest) returns (RegisterTimeRecordResponse);
     rpc ApproveTimeRecord (ApproveTimeRecordRequest) returns (StatusResponse);
     rpc RefuseTimeRecord (RefuseTimeRecordRequest) returns (StatusResponse);
     rpc FindTimeRecord (FindTimeRecordRequest) returns (FindTimeRecordResponse);
     rpc SearchTimeRecords (SearchTimeRecordsRequest) returns (SearchTimeRecordsResponse);
+    rpc ExportTimeRecords (ExportTimeRecordsRequest) returns (ExportTimeRecordsResponse);
 }

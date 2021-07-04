@@ -4,29 +4,8 @@ package dev.azure.com.c4ut.TimeClock;
 
 option go_package = "/protofiles;pb";
 
-message LoginRequest {
-    string username = 1;
-    string password = 2;
-}
-
-message RefreshTokenRequest {
-    string refresh_token = 1;
-}
-
 message FindClaimsByTokenRequest {
     string access_token = 1;
-}
-
-message JWT {
-    string access_token = 1;
-    string id_token = 2;
-    int64 expires_in = 3;
-    int64 refresh_expires_in = 4;
-    string refresh_token = 5;
-    string token_type = 6;
-    int64 not_before_policy = 7;
-    string session_state = 8;
-    string scope = 9;
 }
 
 message Claims {
@@ -35,7 +14,5 @@ message Claims {
 }
 
 service AuthService {
-    rpc Login (LoginRequest) returns (JWT);
-    rpc RefreshToken (RefreshTokenRequest) returns (JWT);
     rpc FindClaimsByToken (FindClaimsByTokenRequest) returns (Claims);
 }

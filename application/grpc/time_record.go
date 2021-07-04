@@ -20,6 +20,13 @@ type TimeRecordGrpcService struct {
 	AuthInterceptor   *AuthInterceptor
 }
 
+func NewTimeRecordGrpcService(service *service.TimeRecordService, authInterceptor *AuthInterceptor) *TimeRecordGrpcService {
+	return &TimeRecordGrpcService{
+		TimeRecordService: service,
+		AuthInterceptor:   authInterceptor,
+	}
+}
+
 func (t *TimeRecordGrpcService) RegisterTimeRecord(ctx context.Context, in *pb.RegisterTimeRecordRequest) (*pb.RegisterTimeRecordResponse, error) {
 	span, ctx := apm.StartSpan(ctx, "RegisterTimeRecord", "gRPC application")
 	defer span.End()
@@ -101,7 +108,6 @@ func (t *TimeRecordGrpcService) FindTimeRecord(ctx context.Context, in *pb.FindT
 		apm.CaptureError(ctx, err).Send()
 		return &pb.FindTimeRecordResponse{}, err
 	}
-	log.WithField("timeRecord", timeRecord).Info("timeRecord finded")
 
 	return &pb.FindTimeRecordResponse{
 		TimeRecord: &pb.TimeRecord{
@@ -128,13 +134,12 @@ func (t *TimeRecordGrpcService) SearchTimeRecords(ctx context.Context, in *pb.Se
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling SearchTimeRecords request")
 
-	nextPageToken, timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, in.FromDate.AsTime(), in.ToDate.AsTime(), int(in.Status), in.EmployeeId, in.ApprovedBy, in.RefusedBy, in.CreatedBy, int(in.PageSize), in.PageToken)
+	nextPageToken, timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, in.Filter.FromDate.AsTime(), in.Filter.ToDate.AsTime(), int(in.Filter.Status), in.Filter.EmployeeId, in.Filter.ApprovedBy, in.Filter.RefusedBy, in.Filter.CreatedBy, int(in.Filter.PageSize), in.Filter.PageToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
 		return &pb.SearchTimeRecordsResponse{}, err
 	}
-	log.WithField("timeRecords", timeRecords).Info("timeRecords searched")
 
 	var result []*pb.TimeRecord
 	for _, timeRecord := range timeRecords {
@@ -160,9 +165,24 @@ func (t *TimeRecordGrpcService) SearchTimeRecords(ctx context.Context, in *pb.Se
 	return &pb.SearchTimeRecordsResponse{NextPageToken: *nextPageToken, TimeRecords: result}, nil
 }
 
-func NewTimeRecordGrpcService(service *service.TimeRecordService, authInterceptor *AuthInterceptor) *TimeRecordGrpcService {
-	return &TimeRecordGrpcService{
-		TimeRecordService: service,
-		AuthInterceptor:   authInterceptor,
+func (t *TimeRecordGrpcService) ExportTimeRecords(ctx context.Context, in *pb.ExportTimeRecordsRequest) (*pb.ExportTimeRecordsResponse, error) {
+	span, ctx := apm.StartSpan(ctx, "ExportTimeRecords", "gRPC application")
+	defer span.End()
+
+	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
+	log.WithField("in", in).Info("handling ExportTimeRecords request")
+
+	nextPageToken, registers, err := t.TimeRecordService.ExportTimeRecords(ctx, in.Filter.FromDate.AsTime(), in.Filter.ToDate.AsTime(), int(in.Filter.Status), in.Filter.EmployeeId, in.Filter.ApprovedBy, in.Filter.RefusedBy, in.Filter.CreatedBy, int(in.Filter.PageSize), in.Filter.PageToken, *t.AuthInterceptor.AccessToken)
+	if err != nil {
+		log.WithError(err)
+		apm.CaptureError(ctx, err).Send()
+		return &pb.ExportTimeRecordsResponse{}, err
 	}
+
+	var result []string
+	for _, r := range registers {
+		result = append(result, string(*r))
+	}
+
+	return &pb.ExportTimeRecordsResponse{NextPageToken: *nextPageToken, Registers: result}, nil
 }

@@ -18,8 +18,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
-	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*JWT, error)
-	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*JWT, error)
 	FindClaimsByToken(ctx context.Context, in *FindClaimsByTokenRequest, opts ...grpc.CallOption) (*Claims, error)
 }
 
@@ -29,24 +27,6 @@ type authServiceClient struct {
 
 func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
-}
-
-func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*JWT, error) {
-	out := new(JWT)
-	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.AuthService/Login", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *authServiceClient) RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*JWT, error) {
-	out := new(JWT)
-	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.AuthService/RefreshToken", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *authServiceClient) FindClaimsByToken(ctx context.Context, in *FindClaimsByTokenRequest, opts ...grpc.CallOption) (*Claims, error) {
@@ -62,8 +42,6 @@ func (c *authServiceClient) FindClaimsByToken(ctx context.Context, in *FindClaim
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
-	Login(context.Context, *LoginRequest) (*JWT, error)
-	RefreshToken(context.Context, *RefreshTokenRequest) (*JWT, error)
 	FindClaimsByToken(context.Context, *FindClaimsByTokenRequest) (*Claims, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
@@ -72,12 +50,6 @@ type AuthServiceServer interface {
 type UnimplementedAuthServiceServer struct {
 }
 
-func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*JWT, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
-}
-func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshTokenRequest) (*JWT, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
-}
 func (UnimplementedAuthServiceServer) FindClaimsByToken(context.Context, *FindClaimsByTokenRequest) (*Claims, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindClaimsByToken not implemented")
 }
@@ -92,42 +64,6 @@ type UnsafeAuthServiceServer interface {
 
 func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
 	s.RegisterService(&AuthService_ServiceDesc, srv)
-}
-
-func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthServiceServer).Login(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/dev.azure.com.c4ut.TimeClock.AuthService/Login",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).Login(ctx, req.(*LoginRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AuthService_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RefreshTokenRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthServiceServer).RefreshToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/dev.azure.com.c4ut.TimeClock.AuthService/RefreshToken",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).RefreshToken(ctx, req.(*RefreshTokenRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _AuthService_FindClaimsByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -155,14 +91,6 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "dev.azure.com.c4ut.TimeClock.AuthService",
 	HandlerType: (*AuthServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Login",
-			Handler:    _AuthService_Login_Handler,
-		},
-		{
-			MethodName: "RefreshToken",
-			Handler:    _AuthService_RefreshToken_Handler,
-		},
 		{
 			MethodName: "FindClaimsByToken",
 			Handler:    _AuthService_FindClaimsByToken_Handler,

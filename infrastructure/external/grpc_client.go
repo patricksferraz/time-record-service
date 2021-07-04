@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func ConnectAuthService(addr string) (*grpc.ClientConn, error) {
+func GrpcClient(addr string) (*grpc.ClientConn, error) {
 
 	conn, err := grpc.Dial(
 		addr,

@@ -60,7 +60,7 @@ type RefuseTimeRecordRequest struct {
 	RefusedReason string `json:"refused_reason" binding:"required"`
 }
 
-type SearchTimeRecordRequest struct {
+type SearchTimeRecordsRequest struct {
 	FromDate   time.Time `json:"from_date" form:"from_date"`
 	ToDate     time.Time `json:"to_date" form:"to_date"`
 	Status     int       `json:"status" form:"status"`
@@ -72,7 +72,12 @@ type SearchTimeRecordRequest struct {
 	PageToken  string    `json:"page_token" form:"page_token"`
 }
 
-type SearchTimeRecordResponse struct {
+type SearchTimeRecordsResponse struct {
 	NextPageToken string       `json:"next_page_token"`
 	TimeRecords   []TimeRecord `json:"time_records"`
+}
+
+type ExportTimeRecordsResponse struct {
+	NextPageToken string   `json:"next_page_token"`
+	Registers     []string `json:"registers"`
 }

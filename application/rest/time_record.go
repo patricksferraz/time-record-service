@@ -16,6 +16,13 @@ type TimeRecordRestService struct {
 	AuthMiddleware    *AuthMiddleware
 }
 
+func NewTimeRecordRestService(service *service.TimeRecordService, authMiddleware *AuthMiddleware) *TimeRecordRestService {
+	return &TimeRecordRestService{
+		TimeRecordService: service,
+		AuthMiddleware:    authMiddleware,
+	}
+}
+
 // RegisterTimeRecord godoc
 // @Security ApiKeyAuth
 // @Summary register a new time record
@@ -250,13 +257,13 @@ func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 // @Description Search for employee time records by `filter`
 // @Accept json
 // @Produce json
-// @Param body query SearchTimeRecordRequest true "JSON body for search time records"
-// @Success 200 {array} SearchTimeRecordResponse
+// @Param body query SearchTimeRecordsRequest true "JSON body for search time records"
+// @Success 200 {array} SearchTimeRecordsResponse
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records [get]
 func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
-	var body SearchTimeRecordRequest
+	var body SearchTimeRecordsRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
@@ -298,9 +305,58 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 	)
 }
 
-func NewTimeRecordRestService(service *service.TimeRecordService, authMiddleware *AuthMiddleware) *TimeRecordRestService {
-	return &TimeRecordRestService{
-		TimeRecordService: service,
-		AuthMiddleware:    authMiddleware,
+// ExportTimeRecords godoc
+// @Security ApiKeyAuth
+// @Summary search time records by filter
+// @ID exportTimeRecords
+// @Tags Time Record
+// @Description Search for employee time records by `filter`
+// @Accept json
+// @Produce json
+// @Param body query SearchTimeRecordsRequest true "JSON body for search time records"
+// @Success 200 {array} ExportTimeRecordsResponse
+// @Failure 400 {object} HTTPError
+// @Failure 403 {object} HTTPError
+// @Router /time-records/export [get]
+func (t *TimeRecordRestService) ExportTimeRecords(ctx *gin.Context) {
+	var body SearchTimeRecordsRequest
+
+	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
+
+	if err := ctx.ShouldBindQuery(&body); err != nil {
+		log.WithError(err)
+		apm.CaptureError(ctx, err).Send()
+		ctx.JSON(
+			http.StatusBadRequest,
+			HTTPError{
+				Code:  http.StatusBadRequest,
+				Error: err.Error(),
+			},
+		)
+		return
 	}
+	log.WithField("query", body).Info("query TimeRecords request")
+
+	nextPageToken, registers, err := t.TimeRecordService.ExportTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.PageSize, body.PageToken, *t.AuthMiddleware.AccessToken)
+	if err != nil {
+		log.WithError(err)
+		apm.CaptureError(ctx, err).Send()
+		ctx.JSON(
+			http.StatusForbidden,
+			HTTPError{
+				Code:  http.StatusForbidden,
+				Error: err.Error(),
+			},
+		)
+		return
+	}
+	log.WithField("registers", registers).Info("registers exported")
+
+	ctx.JSON(
+		http.StatusOK,
+		gin.H{
+			"next_page_token": *nextPageToken,
+			"registers":       registers,
+		},
+	)
 }

@@ -15,12 +15,13 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func StartGrpcServer(database *db.Mongo, _service pb.AuthServiceClient, port int) {
+func StartGrpcServer(database *db.Mongo, authConn *grpc.ClientConn, employeeConn *grpc.ClientConn, port int) {
 
-	authService := service.NewAuthService(_service)
+	authService := service.NewAuthService(authConn)
 	interceptor := NewAuthInterceptor(authService)
 	timeRecordRepository := repository.NewTimeRecordRepository(database)
-	timeRecordService := service.NewTimeRecordService(timeRecordRepository)
+	employeeRepository := service.NewEmployeeService(employeeConn)
+	timeRecordService := service.NewTimeRecordService(timeRecordRepository, employeeRepository)
 	timeRecordGrpcService := NewTimeRecordGrpcService(timeRecordService, interceptor)
 
 	grpcServer := grpc.NewServer(
