@@ -28,6 +28,8 @@ variables:
   # vmImageName: 'ubuntu-latest'
   agentPools: Default
 
+  isDev: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+
 stages:
   - stage: BuildTest
     displayName: Build and Test
@@ -104,6 +106,7 @@ stages:
             displayName: 'Publish code coverage results'
 
   - stage: PublishImage
+    condition: and(succeeded(), eq(variables.isDev, true))
     displayName: 'Publish Docker Image'
 
     jobs:
