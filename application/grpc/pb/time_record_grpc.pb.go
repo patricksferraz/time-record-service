@@ -23,6 +23,7 @@ type TimeRecordServiceClient interface {
 	RefuseTimeRecord(ctx context.Context, in *RefuseTimeRecordRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 	FindTimeRecord(ctx context.Context, in *FindTimeRecordRequest, opts ...grpc.CallOption) (*FindTimeRecordResponse, error)
 	SearchTimeRecords(ctx context.Context, in *SearchTimeRecordsRequest, opts ...grpc.CallOption) (*SearchTimeRecordsResponse, error)
+	ExportTimeRecords(ctx context.Context, in *ExportTimeRecordsRequest, opts ...grpc.CallOption) (*ExportTimeRecordsResponse, error)
 }
 
 type timeRecordServiceClient struct {
@@ -78,6 +79,15 @@ func (c *timeRecordServiceClient) SearchTimeRecords(ctx context.Context, in *Sea
 	return out, nil
 }
 
+func (c *timeRecordServiceClient) ExportTimeRecords(ctx context.Context, in *ExportTimeRecordsRequest, opts ...grpc.CallOption) (*ExportTimeRecordsResponse, error) {
+	out := new(ExportTimeRecordsResponse)
+	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.TimeRecordService/ExportTimeRecords", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TimeRecordServiceServer is the server API for TimeRecordService service.
 // All implementations must embed UnimplementedTimeRecordServiceServer
 // for forward compatibility
@@ -87,6 +97,7 @@ type TimeRecordServiceServer interface {
 	RefuseTimeRecord(context.Context, *RefuseTimeRecordRequest) (*StatusResponse, error)
 	FindTimeRecord(context.Context, *FindTimeRecordRequest) (*FindTimeRecordResponse, error)
 	SearchTimeRecords(context.Context, *SearchTimeRecordsRequest) (*SearchTimeRecordsResponse, error)
+	ExportTimeRecords(context.Context, *ExportTimeRecordsRequest) (*ExportTimeRecordsResponse, error)
 	mustEmbedUnimplementedTimeRecordServiceServer()
 }
 
@@ -108,6 +119,9 @@ func (UnimplementedTimeRecordServiceServer) FindTimeRecord(context.Context, *Fin
 }
 func (UnimplementedTimeRecordServiceServer) SearchTimeRecords(context.Context, *SearchTimeRecordsRequest) (*SearchTimeRecordsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchTimeRecords not implemented")
+}
+func (UnimplementedTimeRecordServiceServer) ExportTimeRecords(context.Context, *ExportTimeRecordsRequest) (*ExportTimeRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExportTimeRecords not implemented")
 }
 func (UnimplementedTimeRecordServiceServer) mustEmbedUnimplementedTimeRecordServiceServer() {}
 
@@ -212,6 +226,24 @@ func _TimeRecordService_SearchTimeRecords_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TimeRecordService_ExportTimeRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportTimeRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TimeRecordServiceServer).ExportTimeRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.azure.com.c4ut.TimeClock.TimeRecordService/ExportTimeRecords",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TimeRecordServiceServer).ExportTimeRecords(ctx, req.(*ExportTimeRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TimeRecordService_ServiceDesc is the grpc.ServiceDesc for TimeRecordService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -238,6 +270,10 @@ var TimeRecordService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchTimeRecords",
 			Handler:    _TimeRecordService_SearchTimeRecords_Handler,
+		},
+		{
+			MethodName: "ExportTimeRecords",
+			Handler:    _TimeRecordService_ExportTimeRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

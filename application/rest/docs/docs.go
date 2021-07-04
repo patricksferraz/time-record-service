@@ -101,7 +101,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/rest.SearchTimeRecordResponse"
+                                "$ref": "#/definitions/rest.SearchTimeRecordsResponse"
                             }
                         }
                     },
@@ -153,6 +153,98 @@ var doc = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/rest.RegisterTimeRecordResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/rest.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/time-records/export": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Search for employee time records by ` + "`" + `filter` + "`" + `",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Time Record"
+                ],
+                "summary": "search time records by filter",
+                "operationId": "exportTimeRecords",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "approved_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "created_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "employee_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "from_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "page_token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "refused_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "to_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/rest.ExportTimeRecordsResponse"
+                            }
                         }
                     },
                     "400": {
@@ -331,6 +423,20 @@ var doc = `{
         }
     },
     "definitions": {
+        "rest.ExportTimeRecordsResponse": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "registers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "rest.HTTPError": {
             "type": "object",
             "properties": {
@@ -394,7 +500,7 @@ var doc = `{
                 }
             }
         },
-        "rest.SearchTimeRecordResponse": {
+        "rest.SearchTimeRecordsResponse": {
             "type": "object",
             "properties": {
                 "next_page_token": {

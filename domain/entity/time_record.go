@@ -27,6 +27,36 @@ type TimeRecord struct {
 	CreatedBy     string           `json:"created_by,omitempty" bson:"created_by" valid:"uuid"`
 }
 
+func NewTimeRecord(_time time.Time, description, employeeID, createdBy string) (*TimeRecord, error) {
+
+	_, offset := _time.Zone()
+	timeRecord := TimeRecord{
+		Time:        _time,
+		Status:      APPROVED,
+		Description: description,
+		RegularTime: true,
+		TzOffset:    offset,
+		EmployeeID:  employeeID,
+		CreatedBy:   createdBy,
+	}
+
+	loc := _time.Location()
+	if !utils.DateEqual(_time, time.Now().In(loc)) {
+		timeRecord.Status = PENDING
+		timeRecord.RegularTime = false
+	}
+
+	timeRecord.ID = uuid.NewV4().String()
+	timeRecord.CreatedAt = time.Now()
+
+	err := timeRecord.isValid()
+	if err != nil {
+		return nil, err
+	}
+
+	return &timeRecord, nil
+}
+
 func (t *TimeRecord) isValid() error {
 
 	if t.Time.After(time.Now()) {
@@ -94,34 +124,4 @@ func (t *TimeRecord) Refuse(refusedBy, refusedReason string) error {
 	t.RefusedReason = refusedReason
 	err := t.isValid()
 	return err
-}
-
-func NewTimeRecord(_time time.Time, description, employeeID, createdBy string) (*TimeRecord, error) {
-
-	_, offset := _time.Zone()
-	timeRecord := TimeRecord{
-		Time:        _time,
-		Status:      APPROVED,
-		Description: description,
-		RegularTime: true,
-		TzOffset:    offset,
-		EmployeeID:  employeeID,
-		CreatedBy:   createdBy,
-	}
-
-	loc := _time.Location()
-	if !utils.DateEqual(_time, time.Now().In(loc)) {
-		timeRecord.Status = PENDING
-		timeRecord.RegularTime = false
-	}
-
-	timeRecord.ID = uuid.NewV4().String()
-	timeRecord.CreatedAt = time.Now()
-
-	err := timeRecord.isValid()
-	if err != nil {
-		return nil, err
-	}
-
-	return &timeRecord, nil
 }

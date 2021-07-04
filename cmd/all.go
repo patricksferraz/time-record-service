@@ -23,7 +23,6 @@ import (
 	"runtime"
 
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/grpc"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/grpc/pb"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/rest"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/external"
@@ -61,20 +60,24 @@ func allCmd() *cobra.Command {
 					log.Fatal(err)
 				}
 			}
-
 			defer database.Close(ctx)
 
 			authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
-			conn, err := external.ConnectAuthService(authServiceAddr)
+			authConn, err := external.GrpcClient(authServiceAddr)
 			if err != nil {
 				log.Fatal(err)
 			}
+			defer authConn.Close()
 
-			defer conn.Close()
-			authdb := pb.NewAuthServiceClient(conn)
+			employeeServiceAddr := os.Getenv("EMPLOYEE_SERVICE_ADDR")
+			employeeConn, err := external.GrpcClient(employeeServiceAddr)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer employeeConn.Close()
 
-			go rest.StartRestServer(database, authdb, restPort)
-			grpc.StartGrpcServer(database, authdb, grpcPort)
+			go rest.StartRestServer(database, authConn, employeeConn, restPort)
+			grpc.StartGrpcServer(database, authConn, employeeConn, grpcPort)
 		},
 	}
 

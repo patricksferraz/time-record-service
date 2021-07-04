@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/grpc/pb"
 	_ "dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/rest/docs"
 	_service "dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/service"
 	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
@@ -14,6 +13,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.elastic.co/apm/module/apmgin"
+	"google.golang.org/grpc"
 )
 
 // @title Time Record Swagger API
@@ -30,17 +30,18 @@ import (
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
-func StartRestServer(database *db.Mongo, service pb.AuthServiceClient, port int) {
+func StartRestServer(database *db.Mongo, authConn *grpc.ClientConn, employeeConn *grpc.ClientConn, port int) {
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(cors.Default())
 	r.Use(apmgin.Middleware(r))
 
-	authService := _service.NewAuthService(service)
+	authService := _service.NewAuthService(authConn)
 	authMiddlerare := NewAuthMiddleware(authService)
 	timeRecordRepository := repository.NewTimeRecordRepository(database)
-	timeRecordService := _service.NewTimeRecordService(timeRecordRepository)
+	employeeService := _service.NewEmployeeService(employeeConn)
+	timeRecordService := _service.NewTimeRecordService(timeRecordRepository, employeeService)
 	timeRecordRestService := NewTimeRecordRestService(timeRecordService, authMiddlerare)
 
 	v1 := r.Group("api/v1/time-records")
@@ -54,6 +55,7 @@ func StartRestServer(database *db.Mongo, service pb.AuthServiceClient, port int)
 
 			authorized.GET("/", timeRecordRestService.SearchTimeRecords)
 			authorized.GET("/:id", timeRecordRestService.FindTimeRecord)
+			authorized.GET("/export", timeRecordRestService.ExportTimeRecords)
 		}
 	}
 

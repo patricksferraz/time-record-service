@@ -16,6 +16,7 @@ import (
 type AuthMiddleware struct {
 	AuthService *service.AuthService
 	Claims      *entity.Claims
+	AccessToken *string
 }
 
 func (a *AuthMiddleware) Require() gin.HandlerFunc {
@@ -42,6 +43,7 @@ func (a *AuthMiddleware) Require() gin.HandlerFunc {
 		log.WithField("claims", claims).Info("verify accessToken")
 
 		a.Claims = claims
+		a.AccessToken = &accessToken
 
 		// TODO: adds retricted permissions
 		// for _, role := range claims.Roles {
