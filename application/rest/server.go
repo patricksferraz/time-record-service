@@ -34,7 +34,13 @@ func StartRestServer(database *db.Mongo, authConn *grpc.ClientConn, employeeConn
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowMethods:     []string{"POST", "OPTIONS", "GET", "PUT"},
+		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Accept", "Origin", "Cache-Control", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowAllOrigins:  true,
+		AllowCredentials: true,
+	}))
 	r.Use(apmgin.Middleware(r))
 
 	authService := _service.NewAuthService(authConn)
@@ -47,13 +53,13 @@ func StartRestServer(database *db.Mongo, authConn *grpc.ClientConn, employeeConn
 	v1 := r.Group("api/v1/time-records")
 	{
 		v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-		authorized := v1.Group("/", authMiddlerare.Require())
+		authorized := v1.Group("", authMiddlerare.Require())
 		{
-			authorized.POST("/", timeRecordRestService.RegisterTimeRecord)
+			authorized.POST("", timeRecordRestService.RegisterTimeRecord)
 			authorized.POST("/:id/approve", timeRecordRestService.ApproveTimeRecord)
 			authorized.POST("/:id/refuse", timeRecordRestService.RefuseTimeRecord)
 
-			authorized.GET("/", timeRecordRestService.SearchTimeRecords)
+			authorized.GET("", timeRecordRestService.SearchTimeRecords)
 			authorized.GET("/:id", timeRecordRestService.FindTimeRecord)
 			authorized.GET("/export", timeRecordRestService.ExportTimeRecords)
 		}
