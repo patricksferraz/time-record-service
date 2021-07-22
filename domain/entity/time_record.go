@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/utils"
 	"github.com/asaskevich/govalidator"
+	"github.com/c-4u/time-record-service/utils"
 	uuid "github.com/satori/go.uuid"
 )
 

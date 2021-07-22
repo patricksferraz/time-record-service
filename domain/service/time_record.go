@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity/exporter"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/repository"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/logger"
+	"github.com/c-4u/time-record-service/domain/entity"
+	"github.com/c-4u/time-record-service/domain/entity/exporter"
+	"github.com/c-4u/time-record-service/domain/repository"
+	"github.com/c-4u/time-record-service/logger"
 	"go.elastic.co/apm"
 	"go.elastic.co/apm/module/apmlogrus"
 )

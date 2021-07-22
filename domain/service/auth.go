@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/grpc/pb"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
+	"github.com/c-4u/time-record-service/application/grpc/pb"
+	"github.com/c-4u/time-record-service/domain/entity"
 	"google.golang.org/grpc"
 )
 

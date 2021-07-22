@@ -1,4 +1,4 @@
-module dev.azure.com/c4ut/TimeClock/_git/time-record-service
+module github.com/c-4u/time-record-service
 
 go 1.16
 

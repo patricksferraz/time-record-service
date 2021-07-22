@@ -36,7 +36,7 @@ func NewTimeRecordServiceClient(cc grpc.ClientConnInterface) TimeRecordServiceCl
 
 func (c *timeRecordServiceClient) RegisterTimeRecord(ctx context.Context, in *RegisterTimeRecordRequest, opts ...grpc.CallOption) (*RegisterTimeRecordResponse, error) {
 	out := new(RegisterTimeRecordResponse)
-	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.TimeRecordService/RegisterTimeRecord", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/github.com.c_4u.TimeRecordService/RegisterTimeRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *timeRecordServiceClient) RegisterTimeRecord(ctx context.Context, in *Re
 
 func (c *timeRecordServiceClient) ApproveTimeRecord(ctx context.Context, in *ApproveTimeRecordRequest, opts ...grpc.CallOption) (*StatusResponse, error) {
 	out := new(StatusResponse)
-	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.TimeRecordService/ApproveTimeRecord", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/github.com.c_4u.TimeRecordService/ApproveTimeRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (c *timeRecordServiceClient) ApproveTimeRecord(ctx context.Context, in *App
 
 func (c *timeRecordServiceClient) RefuseTimeRecord(ctx context.Context, in *RefuseTimeRecordRequest, opts ...grpc.CallOption) (*StatusResponse, error) {
 	out := new(StatusResponse)
-	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.TimeRecordService/RefuseTimeRecord", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/github.com.c_4u.TimeRecordService/RefuseTimeRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *timeRecordServiceClient) RefuseTimeRecord(ctx context.Context, in *Refu
 
 func (c *timeRecordServiceClient) FindTimeRecord(ctx context.Context, in *FindTimeRecordRequest, opts ...grpc.CallOption) (*FindTimeRecordResponse, error) {
 	out := new(FindTimeRecordResponse)
-	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.TimeRecordService/FindTimeRecord", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/github.com.c_4u.TimeRecordService/FindTimeRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (c *timeRecordServiceClient) FindTimeRecord(ctx context.Context, in *FindTi
 
 func (c *timeRecordServiceClient) SearchTimeRecords(ctx context.Context, in *SearchTimeRecordsRequest, opts ...grpc.CallOption) (*SearchTimeRecordsResponse, error) {
 	out := new(SearchTimeRecordsResponse)
-	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.TimeRecordService/SearchTimeRecords", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/github.com.c_4u.TimeRecordService/SearchTimeRecords", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (c *timeRecordServiceClient) SearchTimeRecords(ctx context.Context, in *Sea
 
 func (c *timeRecordServiceClient) ExportTimeRecords(ctx context.Context, in *ExportTimeRecordsRequest, opts ...grpc.CallOption) (*ExportTimeRecordsResponse, error) {
 	out := new(ExportTimeRecordsResponse)
-	err := c.cc.Invoke(ctx, "/dev.azure.com.c4ut.TimeClock.TimeRecordService/ExportTimeRecords", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/github.com.c_4u.TimeRecordService/ExportTimeRecords", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func _TimeRecordService_RegisterTimeRecord_Handler(srv interface{}, ctx context.
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dev.azure.com.c4ut.TimeClock.TimeRecordService/RegisterTimeRecord",
+		FullMethod: "/github.com.c_4u.TimeRecordService/RegisterTimeRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimeRecordServiceServer).RegisterTimeRecord(ctx, req.(*RegisterTimeRecordRequest))
@@ -164,7 +164,7 @@ func _TimeRecordService_ApproveTimeRecord_Handler(srv interface{}, ctx context.C
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dev.azure.com.c4ut.TimeClock.TimeRecordService/ApproveTimeRecord",
+		FullMethod: "/github.com.c_4u.TimeRecordService/ApproveTimeRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimeRecordServiceServer).ApproveTimeRecord(ctx, req.(*ApproveTimeRecordRequest))
@@ -182,7 +182,7 @@ func _TimeRecordService_RefuseTimeRecord_Handler(srv interface{}, ctx context.Co
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dev.azure.com.c4ut.TimeClock.TimeRecordService/RefuseTimeRecord",
+		FullMethod: "/github.com.c_4u.TimeRecordService/RefuseTimeRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimeRecordServiceServer).RefuseTimeRecord(ctx, req.(*RefuseTimeRecordRequest))
@@ -200,7 +200,7 @@ func _TimeRecordService_FindTimeRecord_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dev.azure.com.c4ut.TimeClock.TimeRecordService/FindTimeRecord",
+		FullMethod: "/github.com.c_4u.TimeRecordService/FindTimeRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimeRecordServiceServer).FindTimeRecord(ctx, req.(*FindTimeRecordRequest))
@@ -218,7 +218,7 @@ func _TimeRecordService_SearchTimeRecords_Handler(srv interface{}, ctx context.C
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dev.azure.com.c4ut.TimeClock.TimeRecordService/SearchTimeRecords",
+		FullMethod: "/github.com.c_4u.TimeRecordService/SearchTimeRecords",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimeRecordServiceServer).SearchTimeRecords(ctx, req.(*SearchTimeRecordsRequest))
@@ -236,7 +236,7 @@ func _TimeRecordService_ExportTimeRecords_Handler(srv interface{}, ctx context.C
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dev.azure.com.c4ut.TimeClock.TimeRecordService/ExportTimeRecords",
+		FullMethod: "/github.com.c_4u.TimeRecordService/ExportTimeRecords",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimeRecordServiceServer).ExportTimeRecords(ctx, req.(*ExportTimeRecordsRequest))
@@ -248,7 +248,7 @@ func _TimeRecordService_ExportTimeRecords_Handler(srv interface{}, ctx context.C
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TimeRecordService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "dev.azure.com.c4ut.TimeClock.TimeRecordService",
+	ServiceName: "github.com.c_4u.TimeRecordService",
 	HandlerType: (*TimeRecordServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

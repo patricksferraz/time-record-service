@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
+	"github.com/c-4u/time-record-service/domain/entity"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	"syreclabs.com/go/faker"

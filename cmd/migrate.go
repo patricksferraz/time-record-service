@@ -20,9 +20,9 @@ import (
 	"errors"
 	"log"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
-	_ "dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db/migrations"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/utils"
+	"github.com/c-4u/time-record-service/infrastructure/db"
+	_ "github.com/c-4u/time-record-service/infrastructure/db/migrations"
+	"github.com/c-4u/time-record-service/utils"
 	"github.com/spf13/cobra"
 	migrate "github.com/xakep666/mongo-migrate"
 )

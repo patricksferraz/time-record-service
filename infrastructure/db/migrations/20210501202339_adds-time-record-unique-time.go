@@ -3,7 +3,7 @@ package migrations
 import (
 	"context"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db/collection"
+	"github.com/c-4u/time-record-service/infrastructure/db/collection"
 	migrate "github.com/xakep666/mongo-migrate"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

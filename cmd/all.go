@@ -22,11 +22,11 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/grpc"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/rest"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/external"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/utils"
+	"github.com/c-4u/time-record-service/application/grpc"
+	"github.com/c-4u/time-record-service/application/rest"
+	"github.com/c-4u/time-record-service/infrastructure/db"
+	"github.com/c-4u/time-record-service/infrastructure/external"
+	"github.com/c-4u/time-record-service/utils"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
