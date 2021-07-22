@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
+	"github.com/c-4u/time-record-service/domain/entity"
 	"github.com/stretchr/testify/require"
 )
 

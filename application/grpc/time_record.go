@@ -3,10 +3,10 @@ package grpc
 import (
 	"context"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/application/grpc/pb"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/service"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/logger"
+	"github.com/c-4u/time-record-service/application/grpc/pb"
+	"github.com/c-4u/time-record-service/domain/entity"
+	"github.com/c-4u/time-record-service/domain/service"
+	"github.com/c-4u/time-record-service/logger"
 	"go.elastic.co/apm"
 	"go.elastic.co/apm/module/apmlogrus"
 	"google.golang.org/grpc/codes"

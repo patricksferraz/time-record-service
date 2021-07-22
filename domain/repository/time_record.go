@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/domain/entity"
+	"github.com/c-4u/time-record-service/domain/entity"
 )
 
 type TimeRecordRepositoryInterface interface {

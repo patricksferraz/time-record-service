@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package dev.azure.com.c4ut.TimeClock;
+package github.com.c_4u;
 
 option go_package = "/protofiles;pb";
 

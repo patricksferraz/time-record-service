@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/utils"
 	"github.com/asaskevich/govalidator"
+	"github.com/c-4u/time-record-service/utils"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -20,7 +20,7 @@ type TimeRecord struct {
 	Description   string           `json:"description,omitempty" bson:"description,omitempty" valid:"-"`
 	RefusedReason string           `json:"refused_reason,omitempty" bson:"refused_reason,omitempty" valid:"-"`
 	RegularTime   bool             `json:"regular_time" bson:"regular_time" valid:"-"`
-	TzOffset      int              `json:"tz_offset" bson:"tz_offset" valid:"int"`
+	TzOffset      int              `json:"tz_offset" bson:"tz_offset" valid:"int,optional"`
 	EmployeeID    string           `json:"employee_id,omitempty" bson:"employee_id" valid:"uuid"`
 	ApprovedBy    string           `json:"approved_by,omitempty" bson:"approved_by,omitempty" valid:"-"`
 	RefusedBy     string           `json:"refused_by,omitempty" bson:"refused_by,omitempty" valid:"-"`

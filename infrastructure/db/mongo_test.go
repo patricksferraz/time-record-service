@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/infrastructure/db"
-	"dev.azure.com/c4ut/TimeClock/_git/time-record-service/utils"
+	"github.com/c-4u/time-record-service/infrastructure/db"
+	"github.com/c-4u/time-record-service/utils"
 	"github.com/stretchr/testify/require"
 )
 
