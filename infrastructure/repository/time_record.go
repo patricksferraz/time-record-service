@@ -83,7 +83,7 @@ func (t *TimeRecordRepository) SearchTimeRecords(ctx context.Context, filter *en
 
 	findOpts := options.Find()
 	findOpts.SetLimit(int64(filter.PageSize))
-	findOpts.SetSort(bson.M{"_id": 1})
+	findOpts.SetSort(bson.M{"_id": -1})
 
 	_t := []bson.M{}
 	if !filter.FromDate.IsZero() {
@@ -123,7 +123,7 @@ func (t *TimeRecordRepository) SearchTimeRecords(ctx context.Context, filter *en
 		if err != nil {
 			log.Fatal(err)
 		}
-		f["_id"] = bson.M{"$gt": token}
+		f["_id"] = bson.M{"$lt": token}
 	}
 
 	cur, err := collection.Find(ctx, f, findOpts)
