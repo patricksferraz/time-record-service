@@ -4,7 +4,7 @@ metadata:
   name: time-record-conf
 data:
   GIN_MODE: release
-  AUTH_SERVICE_ADDR: auth-service:50051
+  AUTH_SERVICE_ADDR: auth-keycloak-acl:50051
   EMPLOYEE_SERVICE_ADDR: employee-service:50051
   ELASTIC_APM_SERVER_URL: http://apm-server:8200
   ELASTIC_APM_SERVICE_NAME: time-record-service

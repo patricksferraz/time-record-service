@@ -13,6 +13,6 @@ message Claims {
     repeated string roles = 2;
 }
 
-service AuthService {
+service AuthKeycloakAcl {
     rpc FindClaimsByToken (FindClaimsByTokenRequest) returns (Claims);
 }
