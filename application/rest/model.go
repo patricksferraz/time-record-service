@@ -21,7 +21,7 @@ type RegisterTimeRecordResponse struct {
 }
 
 type TimeRecord struct {
-	Base          `bson:",inline" valid:"-"`
+	Base          `json:",inline"`
 	Time          time.Time `json:"time,omitempty" time_format:"RFC3339"`
 	Status        int       `json:"status,omitempty"`
 	Description   string    `json:"description,omitempty"`
@@ -61,6 +61,15 @@ type RefuseTimeRecordRequest struct {
 }
 
 type SearchTimeRecordsRequest struct {
+	Filter `json:",inline"`
+}
+
+type ExportTimeRecordsRequest struct {
+	Filter `json:",inline"`
+	AsFile bool `json:"as_file" form:"as_file" default:"false"`
+}
+
+type Filter struct {
 	FromDate   time.Time `json:"from_date" form:"from_date"`
 	ToDate     time.Time `json:"to_date" form:"to_date"`
 	Status     int       `json:"status" form:"status"`

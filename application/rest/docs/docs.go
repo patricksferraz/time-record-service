@@ -177,7 +177,7 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Search for employee time records by ` + "`" + `filter` + "`" + `",
+                "description": "Export for employee time records by ` + "`" + `filter` + "`" + `",
                 "consumes": [
                     "application/json"
                 ],
@@ -187,12 +187,18 @@ var doc = `{
                 "tags": [
                     "Time Record"
                 ],
-                "summary": "search time records by filter",
+                "summary": "export time records by filter",
                 "operationId": "exportTimeRecords",
                 "parameters": [
                     {
                         "type": "string",
                         "name": "approved_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "name": "as_file",
                         "in": "query"
                     },
                     {

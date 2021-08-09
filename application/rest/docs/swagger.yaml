@@ -293,12 +293,16 @@ paths:
     get:
       consumes:
       - application/json
-      description: Search for employee time records by `filter`
+      description: Export for employee time records by `filter`
       operationId: exportTimeRecords
       parameters:
       - in: query
         name: approved_by
         type: string
+      - default: false
+        in: query
+        name: as_file
+        type: boolean
       - in: query
         name: created_by
         type: string
@@ -343,7 +347,7 @@ paths:
             $ref: '#/definitions/rest.HTTPError'
       security:
       - ApiKeyAuth: []
-      summary: search time records by filter
+      summary: export time records by filter
       tags:
       - Time Record
 securityDefinitions:

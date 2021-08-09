@@ -1,7 +1,11 @@
 package rest
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/c-4u/time-record-service/domain/entity"
 	"github.com/c-4u/time-record-service/domain/service"
@@ -313,13 +317,13 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 // @Description Export for employee time records by `filter`
 // @Accept json
 // @Produce json
-// @Param body query SearchTimeRecordsRequest true "JSON body for search time records"
+// @Param body query ExportTimeRecordsRequest true "JSON body for search time records"
 // @Success 200 {array} ExportTimeRecordsResponse
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records/export [get]
 func (t *TimeRecordRestService) ExportTimeRecords(ctx *gin.Context) {
-	var body SearchTimeRecordsRequest
+	var body ExportTimeRecordsRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 
@@ -352,11 +356,66 @@ func (t *TimeRecordRestService) ExportTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("registers", registers).Info("registers exported")
 
-	ctx.JSON(
-		http.StatusOK,
-		gin.H{
-			"next_page_token": *nextPageToken,
-			"registers":       registers,
-		},
-	)
+	// TODO: adds async export
+	if body.AsFile {
+		file, err := ioutil.TempFile("/tmp", *nextPageToken)
+		if err != nil {
+			log.WithError(err)
+			apm.CaptureError(ctx, err).Send()
+			ctx.JSON(
+				http.StatusForbidden,
+				HTTPError{
+					Code:  http.StatusForbidden,
+					Error: err.Error(),
+				},
+			)
+			return
+		}
+		defer os.Remove(file.Name())
+
+		for _, data := range registers {
+			_, err := file.WriteString(string(*data) + "\n")
+			if err != nil {
+				log.WithError(err)
+				apm.CaptureError(ctx, err).Send()
+				ctx.JSON(
+					http.StatusForbidden,
+					HTTPError{
+						Code:  http.StatusForbidden,
+						Error: err.Error(),
+					},
+				)
+				return
+			}
+		}
+
+		b, err := ioutil.ReadFile(file.Name())
+		if err != nil {
+			log.WithError(err)
+			apm.CaptureError(ctx, err).Send()
+			ctx.JSON(
+				http.StatusForbidden,
+				HTTPError{
+					Code:  http.StatusForbidden,
+					Error: err.Error(),
+				},
+			)
+			return
+		}
+
+		_t := time.Now()
+		m := http.DetectContentType(b[:512])
+		filename := fmt.Sprintf("%d%02d%02d_%02d%02d%02d_%s.txt", _t.Year(), _t.Month(), _t.Day(), _t.Hour(), _t.Minute(), _t.Second(), *nextPageToken)
+		ctx.Header("Content-Disposition", "attachment; filename="+filename)
+		ctx.Data(http.StatusOK, m, b)
+	} else {
+		ctx.JSON(
+			http.StatusOK,
+			gin.H{
+				"next_page_token": *nextPageToken,
+				"registers":       registers,
+			},
+		)
+	}
+
 }
