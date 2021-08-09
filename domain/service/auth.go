@@ -9,12 +9,12 @@ import (
 )
 
 type AuthService struct {
-	service pb.AuthServiceClient
+	service pb.AuthKeycloakAclClient
 }
 
 func NewAuthService(cc *grpc.ClientConn) *AuthService {
 	return &AuthService{
-		service: pb.NewAuthServiceClient(cc),
+		service: pb.NewAuthKeycloakAclClient(cc),
 	}
 }
 

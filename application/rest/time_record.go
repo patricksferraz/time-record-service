@@ -307,10 +307,10 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 
 // ExportTimeRecords godoc
 // @Security ApiKeyAuth
-// @Summary search time records by filter
+// @Summary export time records by filter
 // @ID exportTimeRecords
 // @Tags Time Record
-// @Description Search for employee time records by `filter`
+// @Description Export for employee time records by `filter`
 // @Accept json
 // @Produce json
 // @Param body query SearchTimeRecordsRequest true "JSON body for search time records"

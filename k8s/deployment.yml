@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: time-record
-        image: coding4u.azurecr.io/time-record-service
+        image: ghcr.io/c-4u/time-record-service:latest
         ports:
         - name: grpc
           containerPort: 50051

@@ -12,4 +12,6 @@ RUN go build -o main .
 
 FROM scratch AS runtime
 COPY --from=builder /go/src/main /
+EXPOSE 8080
+EXPOSE 50051
 ENTRYPOINT ["./main", "all"]
