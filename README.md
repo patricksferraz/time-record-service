@@ -112,9 +112,12 @@ To get a local copy up and running follow these simple steps.
 
   ```sh
   # file: credentials
-  DB_URI=mongodb://user:pass@mongo
-  DB_NAME=time_record_service
+  # DB_URI=mongodb://user:pass@mongo (DEPRECATED)
+  # DB_NAME=time_record_service (DEPRECATED)
+  DB_DEBUG=true
   DB_MIGRATE=true
+  DSN_TYPE=postgres
+  DSN="dbname=time-record-service sslmode=disable user=postgres password=root host=trdb"
   ```
 
   `kubectl create secret generic time-record-secret --from-env-file ./credentials`

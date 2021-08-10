@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"context"
 	"log"
 	"os"
 	"path/filepath"
@@ -33,32 +32,31 @@ import (
 // restCmd represents the rest command
 func restCmd() *cobra.Command {
 	var restPort int
-	var uri string
-	var dbName string
+	// var uri string
+	// var dbName string
+	var dsn string
+	var dsnType string
 
 	restCmd := &cobra.Command{
 		Use:   "rest",
 		Short: "Run rest Service",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.Background()
-			database, err := db.NewMongo(ctx, uri, dbName)
+			// ctx := context.Background()
+			// database, err := db.NewMongo(ctx, uri, dbName)
+			database, err := db.NewPostgres(dsnType, dsn)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			err = database.Test(ctx)
-			if err != nil {
-				log.Fatal(err)
+			if utils.GetEnv("DB_DEBUG", "false") == "true" {
+				database.Debug(true)
 			}
 
 			if utils.GetEnv("DB_MIGRATE", "false") == "true" {
-				err = database.Migrate()
-				if err != nil {
-					log.Fatal(err)
-				}
+				database.Migrate()
 			}
-			defer database.Close(ctx)
+			defer database.Db.Close()
 
 			authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
 			authConn, err := external.GrpcClient(authServiceAddr)
@@ -78,12 +76,16 @@ func restCmd() *cobra.Command {
 		},
 	}
 
-	dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+	// dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
+	// dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+	dDsn := utils.GetEnv("DSN", "dbname=time-record-service sslmode=disable user=postgres password=root host=trdb")
+	dDsnType := utils.GetEnv("DSN_TYPE", "postgres")
 
 	restCmd.Flags().IntVarP(&restPort, "port", "p", 8080, "rest server port")
-	restCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
-	restCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
+	restCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
+	restCmd.Flags().StringVarP(&dsnType, "dsnType", "t", dDsnType, "dsn type")
+	// restCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
+	// restCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
 
 	return restCmd
 }

@@ -15,14 +15,13 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func StartGrpcServer(database *db.Mongo, authConn *grpc.ClientConn, employeeConn *grpc.ClientConn, port int) {
+func StartGrpcServer(database *db.Postgres, authConn *grpc.ClientConn, employeeConn *grpc.ClientConn, port int) {
 
 	authService := service.NewAuthService(authConn)
 	interceptor := NewAuthInterceptor(authService)
-	timeRecordRepository := repository.NewTimeRecordRepository(database)
-	employeeRepository := service.NewEmployeeService(employeeConn)
-	timeRecordService := service.NewTimeRecordService(timeRecordRepository, employeeRepository)
-	timeRecordGrpcService := NewTimeRecordGrpcService(timeRecordService, interceptor)
+	repository := repository.NewPostgresRepository(database)
+	service := service.NewService(repository)
+	grpcService := NewGrpcService(service, interceptor)
 
 	grpcServer := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
@@ -33,7 +32,7 @@ func StartGrpcServer(database *db.Mongo, authConn *grpc.ClientConn, employeeConn
 	)
 
 	reflection.Register(grpcServer)
-	pb.RegisterTimeRecordServiceServer(grpcServer, timeRecordGrpcService)
+	pb.RegisterTimeRecordServiceServer(grpcServer, grpcService)
 
 	address := fmt.Sprintf("0.0.0.0:%d", port)
 	listener, err := net.Listen("tcp", address)

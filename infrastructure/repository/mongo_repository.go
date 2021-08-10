@@ -14,11 +14,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type TimeRecordRepository struct {
+type MongoRepository struct {
 	M *db.Mongo
 }
 
-func (t *TimeRecordRepository) RegisterTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) (*string, error) {
+func (t *MongoRepository) RegisterTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) (*string, error) {
 	span, ctx := apm.StartSpan(ctx, "Register", "repository")
 	defer span.End()
 
@@ -36,7 +36,7 @@ func (t *TimeRecordRepository) RegisterTimeRecord(ctx context.Context, timeRecor
 	return &timeRecord.ID, nil
 }
 
-func (t *TimeRecordRepository) SaveTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) error {
+func (t *MongoRepository) SaveTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) error {
 	span, ctx := apm.StartSpan(ctx, "Save", "repository")
 	defer span.End()
 
@@ -54,7 +54,7 @@ func (t *TimeRecordRepository) SaveTimeRecord(ctx context.Context, timeRecord *e
 	return nil
 }
 
-func (t *TimeRecordRepository) FindTimeRecord(ctx context.Context, id string) (*entity.TimeRecord, error) {
+func (t *MongoRepository) FindTimeRecord(ctx context.Context, id string) (*entity.TimeRecord, error) {
 	span, ctx := apm.StartSpan(ctx, "Find", "repository")
 	defer span.End()
 
@@ -73,7 +73,7 @@ func (t *TimeRecordRepository) FindTimeRecord(ctx context.Context, id string) (*
 	return timeRecord, err
 }
 
-func (t *TimeRecordRepository) SearchTimeRecords(ctx context.Context, filter *entity.Filter) (*string, []*entity.TimeRecord, error) {
+func (t *MongoRepository) SearchTimeRecords(ctx context.Context, filter *entity.Filter) (*string, []*entity.TimeRecord, error) {
 	span, ctx := apm.StartSpan(ctx, "FindAllByEmployeeID", "repository")
 	defer span.End()
 
@@ -168,8 +168,8 @@ func (t *TimeRecordRepository) SearchTimeRecords(ctx context.Context, filter *en
 	return &nextPageToken, timeRecords, nil
 }
 
-func NewTimeRecordRepository(database *db.Mongo) *TimeRecordRepository {
-	return &TimeRecordRepository{
+func NewMongoRepository(database *db.Mongo) *MongoRepository {
+	return &MongoRepository{
 		M: database,
 	}
 }

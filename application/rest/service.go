@@ -15,15 +15,15 @@ import (
 	"go.elastic.co/apm/module/apmlogrus"
 )
 
-type TimeRecordRestService struct {
-	TimeRecordService *service.TimeRecordService
-	AuthMiddleware    *AuthMiddleware
+type RestService struct {
+	Service        *service.Service
+	AuthMiddleware *AuthMiddleware
 }
 
-func NewTimeRecordRestService(service *service.TimeRecordService, authMiddleware *AuthMiddleware) *TimeRecordRestService {
-	return &TimeRecordRestService{
-		TimeRecordService: service,
-		AuthMiddleware:    authMiddleware,
+func NewRestService(service *service.Service, authMiddleware *AuthMiddleware) *RestService {
+	return &RestService{
+		Service:        service,
+		AuthMiddleware: authMiddleware,
 	}
 }
 
@@ -40,7 +40,7 @@ func NewTimeRecordRestService(service *service.TimeRecordService, authMiddleware
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records [post]
-func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
+func (t *RestService) RegisterTimeRecord(ctx *gin.Context) {
 	var req RegisterTimeRecordRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
@@ -59,7 +59,7 @@ func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("json", req).Info("handling TimeRecord request")
 
-	timeRecordID, err := t.TimeRecordService.RegisterTimeRecord(ctx, req.Time, req.Description, req.EmployeeID, t.AuthMiddleware.Claims.EmployeeID)
+	timeRecordID, err := t.Service.RegisterTimeRecord(ctx, req.Time, req.Description, req.EmployeeID, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -90,7 +90,7 @@ func (t *TimeRecordRestService) RegisterTimeRecord(ctx *gin.Context) {
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records/{id}/approve [post]
-func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
+func (t *RestService) ApproveTimeRecord(ctx *gin.Context) {
 	var req ApproveTimeRecordRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
@@ -109,7 +109,7 @@ func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("uri", req).Info("uri id request")
 
-	err := t.TimeRecordService.ApproveTimeRecord(ctx, req.ID, t.AuthMiddleware.Claims.EmployeeID)
+	err := t.Service.ApproveTimeRecord(ctx, req.ID, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -146,7 +146,7 @@ func (t *TimeRecordRestService) ApproveTimeRecord(ctx *gin.Context) {
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records/{id}/refuse [post]
-func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
+func (t *RestService) RefuseTimeRecord(ctx *gin.Context) {
 	var uri IDRequest
 	var body RefuseTimeRecordRequest
 
@@ -180,7 +180,7 @@ func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("body", body).Info("handling Refuse request")
 
-	err := t.TimeRecordService.RefuseTimeRecord(ctx, uri.ID, body.RefusedReason, t.AuthMiddleware.Claims.EmployeeID)
+	err := t.Service.RefuseTimeRecord(ctx, uri.ID, body.RefusedReason, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -216,7 +216,7 @@ func (t *TimeRecordRestService) RefuseTimeRecord(ctx *gin.Context) {
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records/{id} [get]
-func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
+func (t *RestService) FindTimeRecord(ctx *gin.Context) {
 	var req FindTimeRecordRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
@@ -235,7 +235,7 @@ func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("uri", req).Info("uri id request")
 
-	timeRecord, err := t.TimeRecordService.FindTimeRecord(ctx, req.ID)
+	timeRecord, err := t.Service.FindTimeRecord(ctx, req.ID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -266,7 +266,7 @@ func (t *TimeRecordRestService) FindTimeRecord(ctx *gin.Context) {
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records [get]
-func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
+func (t *RestService) SearchTimeRecords(ctx *gin.Context) {
 	var body SearchTimeRecordsRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
@@ -285,7 +285,7 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("query", body).Info("query TimeRecords request")
 
-	nextPageToken, timeRecords, err := t.TimeRecordService.SearchTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.PageSize, body.PageToken)
+	nextPageToken, timeRecords, err := t.Service.SearchTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.PageSize, body.PageToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -322,7 +322,7 @@ func (t *TimeRecordRestService) SearchTimeRecords(ctx *gin.Context) {
 // @Failure 400 {object} HTTPError
 // @Failure 403 {object} HTTPError
 // @Router /time-records/export [get]
-func (t *TimeRecordRestService) ExportTimeRecords(ctx *gin.Context) {
+func (t *RestService) ExportTimeRecords(ctx *gin.Context) {
 	var body ExportTimeRecordsRequest
 
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
@@ -341,7 +341,7 @@ func (t *TimeRecordRestService) ExportTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("query", body).Info("query TimeRecords request")
 
-	nextPageToken, registers, err := t.TimeRecordService.ExportTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.PageSize, body.PageToken, *t.AuthMiddleware.AccessToken)
+	nextPageToken, registers, err := t.Service.ExportTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.PageSize, body.PageToken, *t.AuthMiddleware.AccessToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
