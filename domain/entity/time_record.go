@@ -7,6 +7,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/c-4u/time-record-service/utils"
 	uuid "github.com/satori/go.uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func init() {
@@ -17,27 +18,36 @@ type TimeRecord struct {
 	Base          `bson:",inline" valid:"-"`
 	Time          time.Time        `json:"time,omitempty" bson:"time" valid:"required"`
 	Status        TimeRecordStatus `json:"status" bson:"status" valid:"timeRecordStatus,optional"`
-	Description   string           `json:"description,omitempty" bson:"description,omitempty" valid:"-"`
-	RefusedReason string           `json:"refused_reason,omitempty" bson:"refused_reason,omitempty" valid:"-"`
+	Description   string           `json:"description,omitempty" gorm:"type:varchar(255)" bson:"description,omitempty" valid:"-"`
+	RefusedReason string           `json:"refused_reason,omitempty" gorm:"type:varchar(255)" bson:"refused_reason,omitempty" valid:"-"`
 	RegularTime   bool             `json:"regular_time" bson:"regular_time" valid:"-"`
 	TzOffset      int              `json:"tz_offset" bson:"tz_offset" valid:"int,optional"`
-	EmployeeID    string           `json:"employee_id,omitempty" bson:"employee_id" valid:"uuid"`
-	ApprovedBy    string           `json:"approved_by,omitempty" bson:"approved_by,omitempty" valid:"-"`
-	RefusedBy     string           `json:"refused_by,omitempty" bson:"refused_by,omitempty" valid:"-"`
-	CreatedBy     string           `json:"created_by,omitempty" bson:"created_by" valid:"uuid"`
+	EmployeeID    *string          `json:"employee_id,omitempty" gorm:"column:employee_id;type:uuid;not null" bson:"employee_id" valid:"uuid"`
+	Employee      *Employee        `json:"-" valid:"-"`
+	ApprovedBy    *string          `json:"approved_by,omitempty" gorm:"column:approved_by;type:uuid" bson:"approved_by,omitempty" valid:"-"`
+	Approver      *Employee        `json:"-" valid:"-"`
+	RefusedBy     *string          `json:"refused_by,omitempty" gorm:"column:refused_by;type:uuid" bson:"refused_by,omitempty" valid:"-"`
+	Refuser       *Employee        `json:"-" valid:"-"`
+	CreatedBy     *string          `json:"created_by,omitempty" gorm:"column:created_by;type:uuid;not null" bson:"created_by" valid:"uuid"`
+	Creater       *Employee        `json:"-" valid:"-"`
+	Token         *string          `json:"-" gorm:"column:token;not null" bson:"token" valid:"-"`
 }
 
-func NewTimeRecord(_time time.Time, description, employeeID, createdBy string) (*TimeRecord, error) {
+func NewTimeRecord(_time time.Time, description string, employee, creater *Employee) (*TimeRecord, error) {
 
 	_, offset := _time.Zone()
+	token := primitive.NewObjectID().Hex()
 	timeRecord := TimeRecord{
 		Time:        _time,
 		Status:      APPROVED,
 		Description: description,
 		RegularTime: true,
 		TzOffset:    offset,
-		EmployeeID:  employeeID,
-		CreatedBy:   createdBy,
+		EmployeeID:  &employee.ID,
+		Employee:    employee,
+		CreatedBy:   &creater.ID,
+		Creater:     creater,
+		Token:       &token,
 	}
 
 	loc := _time.Location()
@@ -63,26 +73,18 @@ func (t *TimeRecord) isValid() error {
 		return errors.New("the registration time must not be longer than the current time")
 	}
 
-	if t.EmployeeID == t.ApprovedBy {
-		return errors.New("the employee who recorded the time cannot be the same person who approves")
-	}
-
 	if !t.RegularTime && t.Description == "" {
 		return errors.New("the description must not be empty when the registration is done in an irregular period")
-	}
-
-	if t.EmployeeID == t.RefusedBy {
-		return errors.New("the employee who recorded the time cannot be the same person who refuses")
 	}
 
 	_, err := govalidator.ValidateStruct(t)
 	return err
 }
 
-func (t *TimeRecord) Approve(approvedBy string) error {
+func (t *TimeRecord) Approve(approver *Employee) error {
 
-	if !govalidator.IsUUID(approvedBy) {
-		return errors.New("the approved id must be a valid uuid")
+	if *t.EmployeeID == approver.ID {
+		return errors.New("the employee who recorded the time cannot be the same person who approves")
 	}
 
 	if t.Status == APPROVED {
@@ -95,15 +97,16 @@ func (t *TimeRecord) Approve(approvedBy string) error {
 
 	t.Status = APPROVED
 	t.UpdatedAt = time.Now()
-	t.ApprovedBy = approvedBy
+	t.ApprovedBy = &approver.ID
+	t.Approver = approver
 	err := t.isValid()
 	return err
 }
 
-func (t *TimeRecord) Refuse(refusedBy, refusedReason string) error {
+func (t *TimeRecord) Refuse(refuser *Employee, refusedReason string) error {
 
-	if !govalidator.IsUUID(refusedBy) {
-		return errors.New("the refused id must be a valid uuid")
+	if *t.EmployeeID == refuser.ID {
+		return errors.New("the employee who recorded the time cannot be the same person who refuses")
 	}
 
 	if t.Status == APPROVED {
@@ -120,7 +123,8 @@ func (t *TimeRecord) Refuse(refusedBy, refusedReason string) error {
 
 	t.Status = REFUSED
 	t.UpdatedAt = time.Now()
-	t.RefusedBy = refusedBy
+	t.RefusedBy = &refuser.ID
+	t.Refuser = refuser
 	t.RefusedReason = refusedReason
 	err := t.isValid()
 	return err

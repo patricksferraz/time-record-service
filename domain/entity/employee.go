@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"time"
+
 	"github.com/asaskevich/govalidator"
 	pisvalidatior "github.com/patricksferraz/pisvalidator"
 	uuid "github.com/satori/go.uuid"
@@ -16,11 +18,11 @@ func init() {
 
 type Employee struct {
 	Base        `json:",inline" valid:"required"`
-	Pis         string        `json:"pis" valid:"pis"`
-	TimeRecords []*TimeRecord `json:"time_records" valid:"-"`
+	Pis         string        `json:"pis" gorm:"type:varchar(25);unique" valid:"pis"`
+	TimeRecords []*TimeRecord `json:"time_records,omitempty" gorm:"ForeignKey:EmployeeID" valid:"-"`
 }
 
-func NewEmployee(id, pis string) (*Employee, error) {
+func NewEmployee(id, pis string, createdAt time.Time) (*Employee, error) {
 	entity := &Employee{
 		Pis: pis,
 	}
@@ -31,16 +33,14 @@ func NewEmployee(id, pis string) (*Employee, error) {
 		entity.ID = id
 	}
 
+	entity.CreatedAt = createdAt
+
 	err := entity.isValid()
 	if err != nil {
 		return nil, err
 	}
 
 	return entity, nil
-}
-
-func (e *Employee) AddTimeRecord(timeRecords ...*TimeRecord) {
-	e.TimeRecords = append(e.TimeRecords, timeRecords...)
 }
 
 func (e *Employee) isValid() error {

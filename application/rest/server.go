@@ -30,7 +30,7 @@ import (
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
-func StartRestServer(database *db.Mongo, authConn *grpc.ClientConn, employeeConn *grpc.ClientConn, port int) {
+func StartRestServer(database *db.Postgres, authConn *grpc.ClientConn, employeeConn *grpc.ClientConn, port int) {
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -45,23 +45,22 @@ func StartRestServer(database *db.Mongo, authConn *grpc.ClientConn, employeeConn
 
 	authService := _service.NewAuthService(authConn)
 	authMiddlerare := NewAuthMiddleware(authService)
-	timeRecordRepository := repository.NewTimeRecordRepository(database)
-	employeeService := _service.NewEmployeeService(employeeConn)
-	timeRecordService := _service.NewTimeRecordService(timeRecordRepository, employeeService)
-	timeRecordRestService := NewTimeRecordRestService(timeRecordService, authMiddlerare)
+	repository := repository.NewPostgresRepository(database)
+	service := _service.NewService(repository)
+	restService := NewRestService(service, authMiddlerare)
 
 	v1 := r.Group("api/v1/time-records")
 	{
 		v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		authorized := v1.Group("", authMiddlerare.Require())
 		{
-			authorized.POST("", timeRecordRestService.RegisterTimeRecord)
-			authorized.POST("/:id/approve", timeRecordRestService.ApproveTimeRecord)
-			authorized.POST("/:id/refuse", timeRecordRestService.RefuseTimeRecord)
+			authorized.POST("", restService.RegisterTimeRecord)
+			authorized.POST("/:id/approve", restService.ApproveTimeRecord)
+			authorized.POST("/:id/refuse", restService.RefuseTimeRecord)
 
-			authorized.GET("", timeRecordRestService.SearchTimeRecords)
-			authorized.GET("/:id", timeRecordRestService.FindTimeRecord)
-			authorized.GET("/export", timeRecordRestService.ExportTimeRecords)
+			authorized.GET("", restService.SearchTimeRecords)
+			authorized.GET("/:id", restService.FindTimeRecord)
+			authorized.GET("/export", restService.ExportTimeRecords)
 		}
 	}
 

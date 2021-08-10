@@ -16,16 +16,17 @@ limitations under the License.
 package cmd
 
 import (
-	"context"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 
 	"github.com/c-4u/time-record-service/application/grpc"
+	"github.com/c-4u/time-record-service/application/kafka"
 	"github.com/c-4u/time-record-service/application/rest"
 	"github.com/c-4u/time-record-service/infrastructure/db"
 	"github.com/c-4u/time-record-service/infrastructure/external"
+	"github.com/c-4u/time-record-service/infrastructure/external/topic"
 	"github.com/c-4u/time-record-service/utils"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -34,33 +35,34 @@ import (
 // allCmd represents the all command
 func allCmd() *cobra.Command {
 	var grpcPort int
-	var uri string
-	var dbName string
 	var restPort int
+	// var uri string
+	// var dbName string
+	var servers string
+	var groupId string
+	var dsn string
+	var dsnType string
 
 	allCmd := &cobra.Command{
 		Use:   "all",
 		Short: "Run both gRPC and rest servers",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.Background()
-			database, err := db.NewMongo(ctx, uri, dbName)
+			// ctx := context.Background()
+			// database, err := db.NewMongo(ctx, uri, dbName)
+			database, err := db.NewPostgres(dsnType, dsn)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			err = database.Test(ctx)
-			if err != nil {
-				log.Fatal(err)
+			if utils.GetEnv("DB_DEBUG", "false") == "true" {
+				database.Debug(true)
 			}
 
 			if utils.GetEnv("DB_MIGRATE", "false") == "true" {
-				err = database.Migrate()
-				if err != nil {
-					log.Fatal(err)
-				}
+				database.Migrate()
 			}
-			defer database.Close(ctx)
+			defer database.Db.Close()
 
 			authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
 			authConn, err := external.GrpcClient(authServiceAddr)
@@ -76,18 +78,32 @@ func allCmd() *cobra.Command {
 			}
 			defer employeeConn.Close()
 
+			k, err := external.NewKafka(servers, groupId, []string{topic.Employees})
+			if err != nil {
+				log.Fatal("cannot start kafka processor", err)
+			}
+
+			go kafka.StartKafkaProcessor(database, servers, groupId, k)
 			go rest.StartRestServer(database, authConn, employeeConn, restPort)
 			grpc.StartGrpcServer(database, authConn, employeeConn, grpcPort)
 		},
 	}
 
-	dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+	// dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
+	// dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+	dServers := utils.GetEnv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9094")
+	dGroupId := utils.GetEnv("KAFKA_CONSUMER_GROUP_ID", "time-record-service")
+	dDsn := utils.GetEnv("DSN", "dbname=time-record-service sslmode=disable user=postgres password=root host=trdb")
+	dDsnType := utils.GetEnv("DSN_TYPE", "postgres")
 
+	allCmd.Flags().StringVarP(&servers, "servers", "s", dServers, "kafka servers")
+	allCmd.Flags().StringVarP(&groupId, "groupId", "i", dGroupId, "kafka group id")
+	allCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
+	allCmd.Flags().StringVarP(&dsnType, "dsnType", "t", dDsnType, "dsn type")
 	allCmd.Flags().IntVarP(&grpcPort, "grpcPort", "g", 50051, "gRPC Server port")
 	allCmd.Flags().IntVarP(&restPort, "restPort", "r", 8080, "rest server port")
-	allCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
-	allCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
+	// allCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
+	// allCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
 
 	return allCmd
 }

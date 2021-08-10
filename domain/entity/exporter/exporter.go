@@ -18,20 +18,17 @@ const (
 	SECULLUM ExporterType = iota
 )
 
-func NewExporter(exporter ExporterType, employees []*entity.Employee) (Exporter, error) {
-	switch exporter {
+func NewExporter(_type ExporterType, timeRecords []*entity.TimeRecord) (Exporter, error) {
+	switch _type {
 	case SECULLUM:
-		exporter, err := NewSecullumExporter(employees)
-		if err != nil {
-			return nil, err
-		}
+		exporter := NewSecullumExporter(timeRecords)
 		return exporter, nil
 	}
 	return nil, errors.New("exporter type not implemented")
 }
 
-func (e ExporterType) String() string {
-	switch e {
+func (t ExporterType) String() string {
+	switch t {
 	case SECULLUM:
 		return "SECULLUM"
 	}

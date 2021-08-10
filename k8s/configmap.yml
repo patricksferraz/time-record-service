@@ -8,3 +8,5 @@ data:
   EMPLOYEE_SERVICE_ADDR: employee-service:50051
   ELASTIC_APM_SERVER_URL: http://apm-server:8200
   ELASTIC_APM_SERVICE_NAME: time-record-service
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+  KAFKA_CONSUMER_GROUP_ID: time-record-service

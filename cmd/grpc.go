@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"context"
 	"log"
 	"os"
 	"path/filepath"
@@ -33,32 +32,31 @@ import (
 // grpcCmd represents the grpc command
 func grpcCmd() *cobra.Command {
 	var grpcPort int
-	var uri string
-	var dbName string
+	// var uri string
+	// var dbName string
+	var dsn string
+	var dsnType string
 
 	grpcCmd := &cobra.Command{
 		Use:   "grpc",
 		Short: "Run gRPC Service",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.Background()
-			database, err := db.NewMongo(ctx, uri, dbName)
+			// ctx := context.Background()
+			// database, err := db.NewMongo(ctx, uri, dbName)
+			database, err := db.NewPostgres(dsnType, dsn)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			err = database.Test(ctx)
-			if err != nil {
-				log.Fatal(err)
+			if utils.GetEnv("DB_DEBUG", "false") == "true" {
+				database.Debug(true)
 			}
 
 			if utils.GetEnv("DB_MIGRATE", "false") == "true" {
-				err = database.Migrate()
-				if err != nil {
-					log.Fatal(err)
-				}
+				database.Migrate()
 			}
-			defer database.Close(ctx)
+			defer database.Db.Close()
 
 			authServiceAddr := os.Getenv("AUTH_SERVICE_ADDR")
 			authConn, err := external.GrpcClient(authServiceAddr)
@@ -78,12 +76,16 @@ func grpcCmd() *cobra.Command {
 		},
 	}
 
-	dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+	// dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
+	// dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+	dDsn := utils.GetEnv("DSN", "dbname=time-record-service sslmode=disable user=postgres password=root host=trdb")
+	dDsnType := utils.GetEnv("DSN_TYPE", "postgres")
 
 	grpcCmd.Flags().IntVarP(&grpcPort, "port", "p", 50051, "gRPC Server port")
-	grpcCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
-	grpcCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
+	grpcCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
+	grpcCmd.Flags().StringVarP(&dsnType, "dsnType", "t", dDsnType, "dsn type")
+	// grpcCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
+	// grpcCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
 
 	return grpcCmd
 }
