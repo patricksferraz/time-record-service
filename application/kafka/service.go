@@ -36,7 +36,7 @@ func (p *KafkaProcessor) Consume() {
 
 func (p *KafkaProcessor) processMessage(msg *ckafka.Message) {
 	switch _topic := *msg.TopicPartition.Topic; _topic {
-	case topic.Employees:
+	case topic.NEW_EMPLOYEE:
 		err := p.processEmployee(msg)
 		if err != nil {
 			fmt.Println("process error ", err)

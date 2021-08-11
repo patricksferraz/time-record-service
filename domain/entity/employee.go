@@ -18,7 +18,7 @@ func init() {
 
 type Employee struct {
 	Base        `json:",inline" valid:"required"`
-	Pis         string        `json:"pis" gorm:"type:varchar(25);unique" valid:"pis"`
+	Pis         string        `json:"pis" gorm:"column:pis;type:varchar(25);unique" valid:"pis"`
 	TimeRecords []*TimeRecord `json:"time_records,omitempty" gorm:"ForeignKey:EmployeeID" valid:"-"`
 }
 

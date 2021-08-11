@@ -67,7 +67,7 @@ func allCmd() *cobra.Command {
 			}
 			defer authConn.Close()
 
-			k, err := external.NewKafka(servers, groupId, []string{topic.Employees})
+			k, err := external.NewKafka(servers, groupId, []string{topic.NEW_EMPLOYEE})
 			if err != nil {
 				log.Fatal("cannot start kafka processor", err)
 			}

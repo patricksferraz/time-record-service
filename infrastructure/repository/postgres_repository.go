@@ -12,6 +12,12 @@ type PostgresRepository struct {
 	P *db.Postgres
 }
 
+func NewPostgresRepository(db *db.Postgres) *PostgresRepository {
+	return &PostgresRepository{
+		P: db,
+	}
+}
+
 func (r *PostgresRepository) CreateEmployee(ctx context.Context, employee *entity.Employee) error {
 	err := r.P.Db.Create(employee).Error
 	return err
@@ -97,10 +103,4 @@ func (r *PostgresRepository) SearchTimeRecords(ctx context.Context, filter *enti
 	}
 
 	return &nextPageToken, timeRecords, nil
-}
-
-func NewPostgresRepository(db *db.Postgres) *PostgresRepository {
-	return &PostgresRepository{
-		P: db,
-	}
 }
