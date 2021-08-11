@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func StartGrpcServer(database *db.Postgres, authConn *grpc.ClientConn, employeeConn *grpc.ClientConn, port int) {
+func StartGrpcServer(database *db.Postgres, authConn *grpc.ClientConn, port int) {
 
 	authService := service.NewAuthService(authConn)
 	interceptor := NewAuthInterceptor(authService)

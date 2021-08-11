@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"log"
+	"os"
 
 	"github.com/c-4u/time-record-service/application/kafka"
 	"github.com/c-4u/time-record-service/infrastructure/db"
@@ -60,15 +61,18 @@ func kafkaCmd() *cobra.Command {
 		},
 	}
 
+	dDsn := os.Getenv("DSN")
+	sDsnType := os.Getenv("DSN_TYPE")
 	dServers := utils.GetEnv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9094")
 	dGroupId := utils.GetEnv("KAFKA_CONSUMER_GROUP_ID", "time-record-service")
-	dDsn := utils.GetEnv("DSN", "dbname=time-record-service sslmode=disable user=postgres password=root host=trdb")
-	dDsnType := utils.GetEnv("DSN_TYPE", "postgres")
 
+	kafkaCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
+	kafkaCmd.Flags().StringVarP(&dsnType, "dsnType", "t", sDsnType, "dsn type")
 	kafkaCmd.Flags().StringVarP(&servers, "servers", "s", dServers, "kafka servers")
 	kafkaCmd.Flags().StringVarP(&groupId, "groupId", "i", dGroupId, "kafka group id")
-	kafkaCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
-	kafkaCmd.Flags().StringVarP(&dsnType, "dsnType", "t", dDsnType, "dsn type")
+
+	kafkaCmd.MarkFlagRequired("dsn")
+	kafkaCmd.MarkFlagRequired("dsnType")
 
 	return kafkaCmd
 }

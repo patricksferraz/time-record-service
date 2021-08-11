@@ -42,8 +42,6 @@ func restCmd() *cobra.Command {
 		Short: "Run rest Service",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			// ctx := context.Background()
-			// database, err := db.NewMongo(ctx, uri, dbName)
 			database, err := db.NewPostgres(dsnType, dsn)
 			if err != nil {
 				log.Fatal(err)
@@ -65,27 +63,19 @@ func restCmd() *cobra.Command {
 			}
 			defer authConn.Close()
 
-			employeeServiceAddr := os.Getenv("EMPLOYEE_SERVICE_ADDR")
-			employeeConn, err := external.GrpcClient(employeeServiceAddr)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer employeeConn.Close()
-
-			rest.StartRestServer(database, authConn, employeeConn, restPort)
+			rest.StartRestServer(database, authConn, restPort)
 		},
 	}
 
-	// dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	// dDbName := utils.GetEnv("DB_NAME", "time_record_service")
-	dDsn := utils.GetEnv("DSN", "dbname=time-record-service sslmode=disable user=postgres password=root host=trdb")
-	dDsnType := utils.GetEnv("DSN_TYPE", "postgres")
+	dDsn := os.Getenv("DSN")
+	sDsnType := os.Getenv("DSN_TYPE")
 
-	restCmd.Flags().IntVarP(&restPort, "port", "p", 8080, "rest server port")
 	restCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
-	restCmd.Flags().StringVarP(&dsnType, "dsnType", "t", dDsnType, "dsn type")
-	// restCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
-	// restCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
+	restCmd.Flags().StringVarP(&dsnType, "dsnType", "t", sDsnType, "dsn type")
+	restCmd.Flags().IntVarP(&restPort, "port", "p", 8080, "rest server port")
+
+	restCmd.MarkFlagRequired("dsn")
+	restCmd.MarkFlagRequired("dsnType")
 
 	return restCmd
 }

@@ -7,7 +7,7 @@ services:
       dockerfile: .docker/Dockerfile
     environment:
       ENV: dev
-      ELASTIC_APM_SERVICE_NAME: 'time-record-service'
+      ELASTIC_APM_SERVICE_NAME: time-record-service
     ports:
       - $TIME_RECORD_GRPC_PORT:50051
       - $TIME_RECORD_REST_PORT:8080
@@ -21,24 +21,15 @@ services:
       - 'host.docker.internal:172.17.0.1'
 
   trdb:
-    # image: mongo:4.4
     image: postgres:9.4
     restart: always
-    # command: mongod --auth
     tty: true
     environment:
-      # MONGO_INITDB_ROOT_USERNAME: $MONGODB_USERNAME
-      # MONGO_INITDB_ROOT_PASSWORD: $MONGODB_PASSWORD
-      # MONGO_INITDB_DATABASE: $DB_NAME
-      # MONGODB_DATA_DIR: /data/db
-      # MONDODB_LOG_DIR: /dev/null
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: time-record-service
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
     volumes:
-      # - mgdata:/data/db
       - pgdata:/var/lib/postgresql/data
     ports:
-      # - $DB_PORT:27017
       - $DB_PORT:5432
     networks:
       - time-record
@@ -56,25 +47,7 @@ services:
     networks:
       - time-record
 
-  # mongo-express:
-  #   image: mongo-express
-  #   tty: true
-  #   environment:
-  #     ME_CONFIG_BASICAUTH_USERNAME: admin
-  #     ME_CONFIG_BASICAUTH_PASSWORD: admin123
-  #     ME_CONFIG_MONGODB_PORT: 27017
-  #     ME_CONFIG_MONGODB_SERVER: trdb
-  #     ME_CONFIG_MONGODB_ADMINUSERNAME: $MONGODB_USERNAME
-  #     ME_CONFIG_MONGODB_ADMINPASSWORD: $MONGODB_PASSWORD
-  #   ports:
-  #     - 8081:8081
-  #   depends_on:
-  #     - trdb
-  #   networks:
-  #     - time-record
-
 volumes:
-  # mgdata:
   pgdata:
     driver: local
 

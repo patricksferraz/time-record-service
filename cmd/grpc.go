@@ -42,8 +42,6 @@ func grpcCmd() *cobra.Command {
 		Short: "Run gRPC Service",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			// ctx := context.Background()
-			// database, err := db.NewMongo(ctx, uri, dbName)
 			database, err := db.NewPostgres(dsnType, dsn)
 			if err != nil {
 				log.Fatal(err)
@@ -65,27 +63,19 @@ func grpcCmd() *cobra.Command {
 			}
 			defer authConn.Close()
 
-			employeeServiceAddr := os.Getenv("EMPLOYEE_SERVICE_ADDR")
-			employeeConn, err := external.GrpcClient(employeeServiceAddr)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer employeeConn.Close()
-
-			grpc.StartGrpcServer(database, authConn, employeeConn, grpcPort)
+			grpc.StartGrpcServer(database, authConn, grpcPort)
 		},
 	}
 
-	// dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	// dDbName := utils.GetEnv("DB_NAME", "time_record_service")
-	dDsn := utils.GetEnv("DSN", "dbname=time-record-service sslmode=disable user=postgres password=root host=trdb")
-	dDsnType := utils.GetEnv("DSN_TYPE", "postgres")
+	dDsn := os.Getenv("DSN")
+	sDsnType := os.Getenv("DSN_TYPE")
 
-	grpcCmd.Flags().IntVarP(&grpcPort, "port", "p", 50051, "gRPC Server port")
 	grpcCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
-	grpcCmd.Flags().StringVarP(&dsnType, "dsnType", "t", dDsnType, "dsn type")
-	// grpcCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
-	// grpcCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
+	grpcCmd.Flags().StringVarP(&dsnType, "dsnType", "t", sDsnType, "dsn type")
+	grpcCmd.Flags().IntVarP(&grpcPort, "port", "p", 50051, "gRPC Server port")
+
+	grpcCmd.MarkFlagRequired("dsn")
+	grpcCmd.MarkFlagRequired("dsnType")
 
 	return grpcCmd
 }
