@@ -69,7 +69,8 @@ func NewTimeRecord(_time time.Time, description string, employee, creater *Emplo
 
 func (t *TimeRecord) isValid() error {
 
-	if t.Time.After(time.Now()) {
+	// TODO: change 5 for company tolerance
+	if t.Time.After(time.Now().Add(time.Minute * 5)) {
 		return errors.New("the registration time must not be longer than the current time")
 	}
 
