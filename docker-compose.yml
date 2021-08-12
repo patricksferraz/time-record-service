@@ -7,38 +7,30 @@ services:
       dockerfile: .docker/Dockerfile
     environment:
       ENV: dev
-      ELASTIC_APM_SERVICE_NAME: 'time-record-service'
+      ELASTIC_APM_SERVICE_NAME: time-record-service
     ports:
       - $TIME_RECORD_GRPC_PORT:50051
       - $TIME_RECORD_REST_PORT:8080
     volumes:
       - .:/go/src/
     depends_on:
-      - trdb
+      - postgres
     networks:
       - time-record
     extra_hosts:
       - 'host.docker.internal:172.17.0.1'
 
-  trdb:
-    # image: mongo:4.4
+  postgres:
     image: postgres:9.4
     restart: always
-    # command: mongod --auth
     tty: true
     environment:
-      # MONGO_INITDB_ROOT_USERNAME: $MONGODB_USERNAME
-      # MONGO_INITDB_ROOT_PASSWORD: $MONGODB_PASSWORD
-      # MONGO_INITDB_DATABASE: $DB_NAME
-      # MONGODB_DATA_DIR: /data/db
-      # MONDODB_LOG_DIR: /dev/null
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: time-record-service
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_DB: $POSTGRES_DB
     volumes:
-      # - mgdata:/data/db
       - pgdata:/var/lib/postgresql/data
     ports:
-      # - $DB_PORT:27017
       - $DB_PORT:5432
     networks:
       - time-record
@@ -47,34 +39,62 @@ services:
     image: dpage/pgadmin4
     tty: true
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@user.com
-      - PGADMIN_DEFAULT_PASSWORD=123456
+      PGADMIN_DEFAULT_EMAIL: $PGADMIN_DEFAULT_EMAIL
+      PGADMIN_DEFAULT_PASSWORD: $PGADMIN_DEFAULT_PASSWORD
     ports:
       - 9000:80
     depends_on:
-      - trdb
+      - postgres
     networks:
       - time-record
 
-  # mongo-express:
-  #   image: mongo-express
-  #   tty: true
-  #   environment:
-  #     ME_CONFIG_BASICAUTH_USERNAME: admin
-  #     ME_CONFIG_BASICAUTH_PASSWORD: admin123
-  #     ME_CONFIG_MONGODB_PORT: 27017
-  #     ME_CONFIG_MONGODB_SERVER: trdb
-  #     ME_CONFIG_MONGODB_ADMINUSERNAME: $MONGODB_USERNAME
-  #     ME_CONFIG_MONGODB_ADMINPASSWORD: $MONGODB_PASSWORD
-  #   ports:
-  #     - 8081:8081
-  #   depends_on:
-  #     - trdb
-  #   networks:
-  #     - time-record
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+      - 9094:9094
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: INTERNAL://:9092,OUTSIDE://:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://host.docker.internal:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+    networks:
+      - time-record
+    extra_hosts:
+      - 'host.docker.internal:172.17.0.1'
+
+  kafka-topics-generator:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka
+    command: >
+      bash -c
+        "sleep 5s &&
+        kafka-topics --create --topic=NEW_EMPLOYEE --if-not-exists --bootstrap-server=kafka:9092 &&
+        kafka-topics --create --topic=UPDATE_EMPLOYEE --if-not-exists --bootstrap-server=kafka:9092"
+    networks:
+      - time-record
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:6.0.1
+    hostname: control-center
+    depends_on:
+      - kafka
+    ports:
+      - 9021:9021
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: kafka:9092
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      PORT: 9021
+    networks:
+      - time-record
 
 volumes:
-  # mgdata:
   pgdata:
     driver: local
 

@@ -112,12 +112,10 @@ To get a local copy up and running follow these simple steps.
 
   ```sh
   # file: credentials
-  # DB_URI=mongodb://user:pass@mongo (DEPRECATED)
-  # DB_NAME=time_record_service (DEPRECATED)
   DB_DEBUG=true
   DB_MIGRATE=true
   DSN_TYPE=postgres
-  DSN="dbname=time-record-service sslmode=disable user=postgres password=root host=trdb"
+  DSN="dbname=time-record-service sslmode=disable user=postgres password=pasword host=postgres"
   ```
 
   `kubectl create secret generic time-record-secret --from-env-file ./credentials`
@@ -169,17 +167,28 @@ __Prerequisites__:
 
   ```sh
   # .env
-  TIME_RECORD_GRPC_PORT=50051
-  TIME_RECORD_REST_PORT=8080
+  TIME_RECORD_GRPC_PORT=50052
+  TIME_RECORD_REST_PORT=8089
 
-  MONGODB_USERNAME=admin
-  MONGODB_PASSWORD=admin123
-  DB_URI=mongodb://admin:admin123@trdb:27017
-  DB_NAME=time_record_service
-  DB_PORT=27018
-  DB_MIGRATE=true # to migrate "up" at database startup
+  POSTGRES_DB=time-record-service
+  POSTGRES_USER=postgres
+  POSTGRES_PASSWORD=password
+  DB_MIGRATE=true
+  DB_DEBUG=true
+  DB_PORT=5432
 
-  AUTH_SERVICE_ADDR=auth-service:50051
+  DSN_TYPE=postgres
+  DSN="dbname=${DB_NAME} sslmode=disable user=${DB_USERNAME} password=${DB_PASSWORD} host=postgres"
+
+  PGADMIN_DEFAULT_EMAIL=admin@user.com
+  PGADMIN_DEFAULT_PASSWORD=123456
+
+  AUTH_SERVICE_ADDR=auth-keycloak-acl:50051
+
+  ELASTIC_APM_SERVER_URL=http://apm-server:8200
+
+  KAFKA_BOOTSTRAP_SERVERS=kafka:9094
+  KAFKA_CONSUMER_GROUP_ID=time-record-service
   ```
 
 __Installation__:

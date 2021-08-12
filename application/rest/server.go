@@ -30,7 +30,7 @@ import (
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
-func StartRestServer(database *db.Postgres, authConn *grpc.ClientConn, employeeConn *grpc.ClientConn, port int) {
+func StartRestServer(database *db.Postgres, authConn *grpc.ClientConn, port int) {
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())

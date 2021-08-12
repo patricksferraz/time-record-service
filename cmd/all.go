@@ -36,8 +36,6 @@ import (
 func allCmd() *cobra.Command {
 	var grpcPort int
 	var restPort int
-	// var uri string
-	// var dbName string
 	var servers string
 	var groupId string
 	var dsn string
@@ -48,8 +46,6 @@ func allCmd() *cobra.Command {
 		Short: "Run both gRPC and rest servers",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			// ctx := context.Background()
-			// database, err := db.NewMongo(ctx, uri, dbName)
 			database, err := db.NewPostgres(dsnType, dsn)
 			if err != nil {
 				log.Fatal(err)
@@ -71,39 +67,28 @@ func allCmd() *cobra.Command {
 			}
 			defer authConn.Close()
 
-			employeeServiceAddr := os.Getenv("EMPLOYEE_SERVICE_ADDR")
-			employeeConn, err := external.GrpcClient(employeeServiceAddr)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer employeeConn.Close()
-
-			k, err := external.NewKafka(servers, groupId, []string{topic.Employees})
+			k, err := external.NewKafka(servers, groupId, []string{topic.NEW_EMPLOYEE})
 			if err != nil {
 				log.Fatal("cannot start kafka processor", err)
 			}
 
 			go kafka.StartKafkaProcessor(database, servers, groupId, k)
-			go rest.StartRestServer(database, authConn, employeeConn, restPort)
-			grpc.StartGrpcServer(database, authConn, employeeConn, grpcPort)
+			go rest.StartRestServer(database, authConn, restPort)
+			grpc.StartGrpcServer(database, authConn, grpcPort)
 		},
 	}
 
-	// dUri := utils.GetEnv("DB_URI", "mongodb://localhost")
-	// dDbName := utils.GetEnv("DB_NAME", "time_record_service")
+	dDsn := os.Getenv("DSN")
+	sDsnType := os.Getenv("DSN_TYPE")
 	dServers := utils.GetEnv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9094")
 	dGroupId := utils.GetEnv("KAFKA_CONSUMER_GROUP_ID", "time-record-service")
-	dDsn := utils.GetEnv("DSN", "dbname=time-record-service sslmode=disable user=postgres password=root host=trdb")
-	dDsnType := utils.GetEnv("DSN_TYPE", "postgres")
 
+	allCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
+	allCmd.Flags().StringVarP(&dsnType, "dsnType", "t", sDsnType, "dsn type")
 	allCmd.Flags().StringVarP(&servers, "servers", "s", dServers, "kafka servers")
 	allCmd.Flags().StringVarP(&groupId, "groupId", "i", dGroupId, "kafka group id")
-	allCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
-	allCmd.Flags().StringVarP(&dsnType, "dsnType", "t", dDsnType, "dsn type")
 	allCmd.Flags().IntVarP(&grpcPort, "grpcPort", "g", 50051, "gRPC Server port")
 	allCmd.Flags().IntVarP(&restPort, "restPort", "r", 8080, "rest server port")
-	// allCmd.Flags().StringVarP(&uri, "uri", "u", dUri, "database uri")
-	// allCmd.Flags().StringVarP(&dbName, "dbName", "", dDbName, "database name")
 
 	return allCmd
 }
