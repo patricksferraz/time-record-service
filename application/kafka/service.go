@@ -37,16 +37,17 @@ func (p *KafkaProcessor) Consume() {
 func (p *KafkaProcessor) processMessage(msg *ckafka.Message) {
 	switch _topic := *msg.TopicPartition.Topic; _topic {
 	case topic.NEW_EMPLOYEE:
-		err := p.processEmployee(msg)
+		// TODO: add fault tolerance
+		err := p.createEmployee(msg)
 		if err != nil {
-			fmt.Println("process error ", err)
+			fmt.Println("creation error ", err)
 		}
 	default:
 		fmt.Println("not a valid topic", string(msg.Value))
 	}
 }
 
-func (p *KafkaProcessor) processEmployee(msg *ckafka.Message) error {
+func (p *KafkaProcessor) createEmployee(msg *ckafka.Message) error {
 	employeeEvent := &schema.EmployeeEvent{}
 	err := employeeEvent.ParseJson(msg.Value)
 	if err != nil {

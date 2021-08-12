@@ -1,5 +1,5 @@
 package topic
 
 const (
-	NEW_EMPLOYEE string = "new-employee"
+	NEW_EMPLOYEE string = "NEW_EMPLOYEE"
 )

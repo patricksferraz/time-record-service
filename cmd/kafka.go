@@ -71,9 +71,6 @@ func kafkaCmd() *cobra.Command {
 	kafkaCmd.Flags().StringVarP(&servers, "servers", "s", dServers, "kafka servers")
 	kafkaCmd.Flags().StringVarP(&groupId, "groupId", "i", dGroupId, "kafka group id")
 
-	kafkaCmd.MarkFlagRequired("dsn")
-	kafkaCmd.MarkFlagRequired("dsnType")
-
 	return kafkaCmd
 }
 

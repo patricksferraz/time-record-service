@@ -74,9 +74,6 @@ func restCmd() *cobra.Command {
 	restCmd.Flags().StringVarP(&dsnType, "dsnType", "t", sDsnType, "dsn type")
 	restCmd.Flags().IntVarP(&restPort, "port", "p", 8080, "rest server port")
 
-	restCmd.MarkFlagRequired("dsn")
-	restCmd.MarkFlagRequired("dsnType")
-
 	return restCmd
 }
 

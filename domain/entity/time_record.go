@@ -30,7 +30,7 @@ type TimeRecord struct {
 	Refuser       *Employee        `json:"-" valid:"-"`
 	CreatedBy     *string          `json:"created_by,omitempty" gorm:"column:created_by;type:uuid;not null" bson:"created_by" valid:"uuid"`
 	Creater       *Employee        `json:"-" valid:"-"`
-	Token         *string          `json:"-" gorm:"column:token;not null" bson:"token" valid:"-"`
+	Token         *string          `json:"-" gorm:"column:token;type:varchar(25);not null" bson:"token" valid:"-"`
 }
 
 func NewTimeRecord(_time time.Time, description string, employee, creater *Employee) (*TimeRecord, error) {

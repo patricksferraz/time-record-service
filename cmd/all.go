@@ -90,9 +90,6 @@ func allCmd() *cobra.Command {
 	allCmd.Flags().IntVarP(&grpcPort, "grpcPort", "g", 50051, "gRPC Server port")
 	allCmd.Flags().IntVarP(&restPort, "restPort", "r", 8080, "rest server port")
 
-	allCmd.MarkFlagRequired("dsn")
-	allCmd.MarkFlagRequired("dsnType")
-
 	return allCmd
 }
 
