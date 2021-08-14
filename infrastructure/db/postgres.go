@@ -40,5 +40,5 @@ func (p *Postgres) Debug(enable bool) {
 }
 
 func (p *Postgres) Migrate() {
-	p.Db.AutoMigrate(&entity.Employee{}, &entity.TimeRecord{})
+	p.Db.AutoMigrate(&entity.Employee{}, &entity.TimeRecord{}, &entity.Company{})
 }

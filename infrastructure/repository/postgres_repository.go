@@ -18,22 +18,6 @@ func NewPostgresRepository(db *db.Postgres) *PostgresRepository {
 	}
 }
 
-func (r *PostgresRepository) CreateEmployee(ctx context.Context, employee *entity.Employee) error {
-	err := r.P.Db.Create(employee).Error
-	return err
-}
-
-func (r *PostgresRepository) FindEmployee(ctx context.Context, id string) (*entity.Employee, error) {
-	var employee entity.Employee
-	r.P.Db.First(&employee, "id = ?", id)
-
-	if employee.ID == "" {
-		return nil, fmt.Errorf("no employee found")
-	}
-
-	return &employee, nil
-}
-
 func (r *PostgresRepository) SaveEmployee(ctx context.Context, employee *entity.Employee) error {
 	err := r.P.Db.Save(employee).Error
 	return err
@@ -103,4 +87,36 @@ func (r *PostgresRepository) SearchTimeRecords(ctx context.Context, filter *enti
 	}
 
 	return &nextPageToken, timeRecords, nil
+}
+
+func (r *PostgresRepository) CreateEmployee(ctx context.Context, employee *entity.Employee) error {
+	err := r.P.Db.Create(employee).Error
+	return err
+}
+
+func (r *PostgresRepository) FindEmployee(ctx context.Context, id string) (*entity.Employee, error) {
+	var employee entity.Employee
+	r.P.Db.Preload("Company").First(&employee, "id = ?", id)
+
+	if employee.ID == "" {
+		return nil, fmt.Errorf("no employee found")
+	}
+
+	return &employee, nil
+}
+
+func (r *PostgresRepository) CreateCompany(ctx context.Context, company *entity.Company) error {
+	err := r.P.Db.Create(company).Error
+	return err
+}
+
+func (r *PostgresRepository) FindCompany(ctx context.Context, id string) (*entity.Company, error) {
+	var company entity.Company
+	r.P.Db.First(&company, "id = ?", id)
+
+	if company.ID == "" {
+		return nil, fmt.Errorf("no company found")
+	}
+
+	return &company, nil
 }

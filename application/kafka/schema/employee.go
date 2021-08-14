@@ -14,8 +14,9 @@ func init() {
 }
 
 type Employee struct {
-	Base `json:",inline" valid:"required"`
-	Pis  string `json:"pis,omitempty" valid:"pis"`
+	Base      `json:",inline" valid:"required"`
+	Pis       string `json:"pis,omitempty" valid:"pis"`
+	CompanyID string `json:"company_id" valid:"uuid"`
 }
 
 func NewEmployee(id, pis string) *Employee {

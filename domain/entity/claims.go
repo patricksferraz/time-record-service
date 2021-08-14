@@ -9,7 +9,7 @@ func init() {
 }
 
 type Claims struct {
-	EmployeeID string   `valid:"uuid"`
+	EmployeeID string   `valid:"-"`
 	Roles      []string `valid:"-"`
 }
 
