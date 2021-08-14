@@ -15,4 +15,7 @@ type RepositoryInterface interface {
 	SaveTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) error
 	FindTimeRecord(ctx context.Context, id string) (*entity.TimeRecord, error)
 	SearchTimeRecords(ctx context.Context, filter *entity.Filter) (*string, []*entity.TimeRecord, error)
+
+	CreateCompany(ctx context.Context, company *entity.Company) error
+	FindCompany(ctx context.Context, id string) (*entity.Company, error)
 }

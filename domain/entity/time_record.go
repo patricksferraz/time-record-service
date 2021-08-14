@@ -16,13 +16,13 @@ func init() {
 
 type TimeRecord struct {
 	Base          `bson:",inline" valid:"-"`
-	Time          time.Time        `json:"time,omitempty" gorm:"column:time;not null;unique_index:idx_employee_time" bson:"time" valid:"required"`
+	Time          time.Time        `json:"time,omitempty" gorm:"column:time;not null;unique_index:idx_employee_company_time" bson:"time" valid:"required"`
 	Status        TimeRecordStatus `json:"status" gorm:"column:status;not null" bson:"status" valid:"timeRecordStatus"`
 	Description   string           `json:"description,omitempty" gorm:"column:description;type:varchar(255)" bson:"description,omitempty" valid:"-"`
 	RefusedReason string           `json:"refused_reason,omitempty" gorm:"column:refused_reason;type:varchar(255)" bson:"refused_reason,omitempty" valid:"-"`
 	RegularTime   bool             `json:"regular_time" gorm:"column:regular_time" bson:"regular_time" valid:"-"`
 	TzOffset      int              `json:"tz_offset" bson:"tz_offset" valid:"int,optional"`
-	EmployeeID    *string          `json:"employee_id,omitempty" gorm:"column:employee_id;type:uuid;not null;unique_index:idx_employee_time" bson:"employee_id" valid:"uuid"`
+	EmployeeID    *string          `json:"employee_id,omitempty" gorm:"column:employee_id;type:uuid;not null;unique_index:idx_employee_company_time" bson:"employee_id" valid:"uuid"`
 	Employee      *Employee        `json:"-" valid:"-"`
 	ApprovedBy    *string          `json:"approved_by,omitempty" gorm:"column:approved_by;type:uuid" bson:"approved_by,omitempty" valid:"-"`
 	Approver      *Employee        `json:"-" valid:"-"`
@@ -30,10 +30,12 @@ type TimeRecord struct {
 	Refuser       *Employee        `json:"-" valid:"-"`
 	CreatedBy     *string          `json:"created_by,omitempty" gorm:"column:created_by;type:uuid;not null" bson:"created_by" valid:"uuid"`
 	Creater       *Employee        `json:"-" valid:"-"`
+	CompanyID     *string          `json:"company_id,omitempty" gorm:"column:company_id;type:uuid;not null;unique_index:idx_employee_company_time" bson:"company_id" valid:"uuid"`
+	Company       *Company         `json:"-" valid:"-"`
 	Token         *string          `json:"-" gorm:"column:token;type:varchar(25);not null" bson:"token" valid:"-"`
 }
 
-func NewTimeRecord(_time time.Time, description string, employee, creater *Employee) (*TimeRecord, error) {
+func NewTimeRecord(_time time.Time, description string, employee, creater *Employee, company *Company) (*TimeRecord, error) {
 
 	_, offset := _time.Zone()
 	token := primitive.NewObjectID().Hex()
@@ -47,6 +49,8 @@ func NewTimeRecord(_time time.Time, description string, employee, creater *Emplo
 		Employee:    employee,
 		CreatedBy:   &creater.ID,
 		Creater:     creater,
+		CompanyID:   &company.ID,
+		Company:     company,
 		Token:       &token,
 	}
 

@@ -24,7 +24,4 @@ func TestModel_NewEmployeeClaims(t *testing.T) {
 	require.Nil(t, err)
 	require.NotEmpty(t, uuid.FromStringOrNil(claims.EmployeeID))
 	require.Equal(t, claims.Roles, roles)
-
-	_, err = entity.NewClaims("", roles)
-	require.NotNil(t, err)
 }

@@ -19,20 +19,6 @@ func NewService(timeRecordRepository repository.RepositoryInterface) *Service {
 	}
 }
 
-func (s *Service) CreateEmployee(ctx context.Context, id, pis string, createdAt time.Time) (*string, error) {
-	employee, err := entity.NewEmployee(id, pis, createdAt)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.Repository.CreateEmployee(ctx, employee)
-	if err != nil {
-		return nil, err
-	}
-
-	return &employee.ID, nil
-}
-
 func (s *Service) RegisterTimeRecord(ctx context.Context, _time time.Time, description, employeeID, createdBy string) (*string, error) {
 	// span, ctx := apm.StartSpan(ctx, "Register", "time record domain service")
 	// defer span.End()
@@ -48,7 +34,7 @@ func (s *Service) RegisterTimeRecord(ctx context.Context, _time time.Time, descr
 		return nil, err
 	}
 
-	timeRecord, err := entity.NewTimeRecord(_time, description, employee, creater)
+	timeRecord, err := entity.NewTimeRecord(_time, description, employee, creater, employee.Company)
 	if err != nil {
 		// log.WithError(err)
 		// apm.CaptureError(ctx, err).Send()
@@ -155,4 +141,37 @@ func (s *Service) ExportTimeRecords(ctx context.Context, fromDate, toDate time.T
 	}
 
 	return nextPageToken, exporter.Export(), nil
+}
+
+func (s *Service) CreateCompany(ctx context.Context, id string) error {
+	company, err := entity.NewCompany(id)
+	if err != nil {
+		return err
+	}
+
+	err = s.Repository.CreateCompany(ctx, company)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) CreateEmployee(ctx context.Context, id, pis, companyID string) error {
+	company, err := s.Repository.FindCompany(ctx, companyID)
+	if err != nil {
+		return err
+	}
+
+	employee, err := entity.NewEmployee(id, pis, company)
+	if err != nil {
+		return err
+	}
+
+	err = s.Repository.CreateEmployee(ctx, employee)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

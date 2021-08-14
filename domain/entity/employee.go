@@ -5,7 +5,6 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	pisvalidatior "github.com/patricksferraz/pisvalidator"
-	uuid "github.com/satori/go.uuid"
 )
 
 func init() {
@@ -20,20 +19,18 @@ type Employee struct {
 	Base        `json:",inline" valid:"required"`
 	Pis         string        `json:"pis" gorm:"column:pis;type:varchar(25);not null;unique" valid:"pis"`
 	TimeRecords []*TimeRecord `json:"time_records,omitempty" gorm:"ForeignKey:EmployeeID" valid:"-"`
+	CompanyID   string        `json:"company_id" gorm:"column:company_id;type:uuid;not null" valid:"uuid"`
+	Company     *Company      `json:"-" valid:"-"`
 }
 
-func NewEmployee(id, pis string, createdAt time.Time) (*Employee, error) {
+func NewEmployee(id, pis string, company *Company) (*Employee, error) {
 	entity := &Employee{
-		Pis: pis,
+		Pis:       pis,
+		CompanyID: company.ID,
+		Company:   company,
 	}
-
-	if id == "" {
-		entity.ID = uuid.NewV4().String()
-	} else {
-		entity.ID = id
-	}
-
-	entity.CreatedAt = createdAt
+	entity.ID = id
+	entity.CreatedAt = time.Now()
 
 	err := entity.isValid()
 	if err != nil {
