@@ -7,6 +7,7 @@ import (
 	"github.com/c-4u/time-record-service/domain/entity"
 	"github.com/c-4u/time-record-service/domain/entity/exporter"
 	"github.com/c-4u/time-record-service/domain/repository"
+	"github.com/c-4u/time-record-service/infrastructure/external/topic"
 )
 
 type Service struct {
@@ -49,6 +50,21 @@ func (s *Service) RegisterTimeRecord(ctx context.Context, _time time.Time, descr
 		return nil, err
 	}
 	// log.WithField("timeRecord", timeRecord).Info("timeRecord registered")
+
+	event, err := entity.NewTimeRecordEvent(timeRecord)
+	if err != nil {
+		return nil, err
+	}
+
+	msg, err := event.ToJson()
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.Repository.PublishEvent(ctx, string(msg), topic.NEW_TIME_RECORD, *timeRecord.EmployeeID)
+	if err != nil {
+		return nil, err
+	}
 
 	return &timeRecord.ID, nil
 }

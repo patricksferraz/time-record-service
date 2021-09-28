@@ -76,7 +76,9 @@ services:
       bash -c
         "sleep 5s &&
         kafka-topics --create --topic=NEW_EMPLOYEE --if-not-exists --bootstrap-server=kafka:9092 &&
-        kafka-topics --create --topic=UPDATE_EMPLOYEE --if-not-exists --bootstrap-server=kafka:9092"
+        kafka-topics --create --topic=NEW_COMPANY --if-not-exists --bootstrap-server=kafka:9092 &&
+        kafka-topics --create --topic=NEW_TIME_RECORD --if-not-exists --bootstrap-server=kafka:9092
+        "
     networks:
       - time-record
 

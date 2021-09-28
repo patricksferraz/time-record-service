@@ -1,4 +1,4 @@
-package service
+package external
 
 import (
 	"context"
@@ -8,22 +8,22 @@ import (
 	"google.golang.org/grpc"
 )
 
-type AuthService struct {
-	service pb.AuthKeycloakAclClient
+type AuthClient struct {
+	c pb.AuthKeycloakAclClient
 }
 
-func NewAuthService(cc *grpc.ClientConn) *AuthService {
-	return &AuthService{
-		service: pb.NewAuthKeycloakAclClient(cc),
+func NewAuthClient(cc *grpc.ClientConn) *AuthClient {
+	return &AuthClient{
+		c: pb.NewAuthKeycloakAclClient(cc),
 	}
 }
 
-func (a *AuthService) Verify(ctx context.Context, accessToken string) (*entity.Claims, error) {
+func (a *AuthClient) Verify(ctx context.Context, accessToken string) (*entity.Claims, error) {
 	req := &pb.FindClaimsByTokenRequest{
 		AccessToken: accessToken,
 	}
 
-	_claims, err := a.service.FindClaimsByToken(ctx, req)
+	_claims, err := a.c.FindClaimsByToken(ctx, req)
 	if err != nil {
 		return nil, err
 	}

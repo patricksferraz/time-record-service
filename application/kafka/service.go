@@ -13,18 +13,18 @@ import (
 
 type KafkaProcessor struct {
 	Service *service.Service
-	K       *external.Kafka
+	K       *external.KafkaConsumer
 }
 
-func NewKafkaProcessor(service *service.Service, kafka *external.Kafka) *KafkaProcessor {
+func NewKafkaProcessor(service *service.Service, kafkaConsumer *external.KafkaConsumer) *KafkaProcessor {
 	return &KafkaProcessor{
 		Service: service,
-		K:       kafka,
+		K:       kafkaConsumer,
 	}
 }
 
 func (p *KafkaProcessor) Consume() {
-	p.K.Consumer.SubscribeTopics(p.K.Topics, nil)
+	p.K.Consumer.SubscribeTopics(p.K.ConsumerTopics, nil)
 	for {
 		msg, err := p.K.Consumer.ReadMessage(-1)
 		if err == nil {

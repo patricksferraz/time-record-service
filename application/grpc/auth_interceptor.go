@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/c-4u/time-record-service/domain/entity"
-	"github.com/c-4u/time-record-service/domain/service"
+	"github.com/c-4u/time-record-service/infrastructure/external"
 	"github.com/c-4u/time-record-service/logger"
 	"go.elastic.co/apm"
 	"go.elastic.co/apm/module/apmlogrus"
@@ -15,7 +15,7 @@ import (
 )
 
 type AuthInterceptor struct {
-	AuthService *service.AuthService
+	AuthClient  *external.AuthClient
 	Claims      *entity.Claims
 	AccessToken *string
 }
@@ -83,7 +83,7 @@ func (a *AuthInterceptor) authorize(ctx context.Context, method string) error {
 	}
 
 	accessToken := values[0]
-	claims, err := a.AuthService.Verify(ctx, accessToken)
+	claims, err := a.AuthClient.Verify(ctx, accessToken)
 	if err != nil {
 		err := status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
 		log.WithError(err)
@@ -107,8 +107,8 @@ func (a *AuthInterceptor) authorize(ctx context.Context, method string) error {
 	return err
 }
 
-func NewAuthInterceptor(authService *service.AuthService) *AuthInterceptor {
+func NewAuthInterceptor(authClient *external.AuthClient) *AuthInterceptor {
 	return &AuthInterceptor{
-		AuthService: authService,
+		AuthClient: authClient,
 	}
 }

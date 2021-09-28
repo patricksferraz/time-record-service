@@ -18,4 +18,6 @@ type RepositoryInterface interface {
 
 	CreateCompany(ctx context.Context, company *entity.Company) error
 	FindCompany(ctx context.Context, id string) (*entity.Company, error)
+
+	PublishEvent(ctx context.Context, msg, topic, key string) error
 }

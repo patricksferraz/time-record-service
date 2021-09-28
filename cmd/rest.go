@@ -25,6 +25,7 @@ import (
 	"github.com/c-4u/time-record-service/infrastructure/db"
 	"github.com/c-4u/time-record-service/infrastructure/external"
 	"github.com/c-4u/time-record-service/utils"
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
@@ -32,8 +33,8 @@ import (
 // restCmd represents the rest command
 func restCmd() *cobra.Command {
 	var restPort int
-	// var uri string
-	// var dbName string
+	var servers string
+	var groupId string
 	var dsn string
 	var dsnType string
 
@@ -63,16 +64,26 @@ func restCmd() *cobra.Command {
 			}
 			defer authConn.Close()
 
-			rest.StartRestServer(database, authConn, restPort)
+			deliveryChan := make(chan ckafka.Event)
+			k, err := external.NewKafkaProducer(servers, deliveryChan)
+			if err != nil {
+				log.Fatal("cannot start kafka processor", err)
+			}
+
+			rest.StartRestServer(database, authConn, k, restPort)
 		},
 	}
 
 	dDsn := os.Getenv("DSN")
 	sDsnType := os.Getenv("DSN_TYPE")
+	dServers := utils.GetEnv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9094")
+	dGroupId := utils.GetEnv("KAFKA_CONSUMER_GROUP_ID", "time-record-service")
 
 	restCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
 	restCmd.Flags().StringVarP(&dsnType, "dsnType", "t", sDsnType, "dsn type")
 	restCmd.Flags().IntVarP(&restPort, "port", "p", 8080, "rest server port")
+	restCmd.Flags().StringVarP(&servers, "servers", "s", dServers, "kafka servers")
+	restCmd.Flags().StringVarP(&groupId, "groupId", "i", dGroupId, "kafka group id")
 
 	return restCmd
 }
