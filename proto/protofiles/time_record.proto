@@ -7,8 +7,9 @@ option go_package = "/protofiles;pb";
 
 message RegisterTimeRecordRequest {
     string employee_id = 1;
-    google.protobuf.Timestamp time = 2;
-    string description = 3;
+    string company_id = 2;
+    google.protobuf.Timestamp time = 3;
+    string description = 4;
 }
 
 message RegisterTimeRecordResponse {

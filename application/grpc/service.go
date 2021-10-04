@@ -3,10 +3,10 @@ package grpc
 import (
 	"context"
 
-	"github.com/c-4u/time-record-service/application/grpc/pb"
 	"github.com/c-4u/time-record-service/domain/entity"
 	"github.com/c-4u/time-record-service/domain/service"
 	"github.com/c-4u/time-record-service/logger"
+	"github.com/c-4u/time-record-service/proto/pb"
 	"go.elastic.co/apm"
 	"go.elastic.co/apm/module/apmlogrus"
 	"google.golang.org/grpc/codes"
@@ -34,7 +34,7 @@ func (t *GrpcService) RegisterTimeRecord(ctx context.Context, in *pb.RegisterTim
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling RegisterTimeRecord request")
 
-	timeRecordID, err := t.Service.RegisterTimeRecord(ctx, in.Time.AsTime(), in.Description, in.EmployeeId, t.AuthInterceptor.Claims.EmployeeID)
+	timeRecordID, err := t.Service.RegisterTimeRecord(ctx, in.Time.AsTime(), in.Description, in.EmployeeId, in.CompanyId, t.AuthInterceptor.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()

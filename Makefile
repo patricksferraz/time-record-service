@@ -39,12 +39,12 @@ test:
 
 gen:
 	protoc \
-	--go_out=application/grpc/pb \
+	--go_out=proto/pb \
 	--go_opt=paths=source_relative \
-	--go-grpc_out=application/grpc/pb \
+	--go-grpc_out=proto/pb \
 	--go-grpc_opt=paths=source_relative \
-	--proto_path=application/grpc/protofiles \
-	application/grpc/protofiles/*.proto
+	--proto_path=proto/protofiles \
+	proto/protofiles/*.proto
 
 gtest:
 	go test $(VERBOSE) -cover -coverprofile coverage.out ./...

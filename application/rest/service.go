@@ -59,7 +59,7 @@ func (t *RestService) RegisterTimeRecord(ctx *gin.Context) {
 	}
 	log.WithField("json", req).Info("handling TimeRecord request")
 
-	timeRecordID, err := t.Service.RegisterTimeRecord(ctx, req.Time, req.Description, req.EmployeeID, t.AuthMiddleware.Claims.EmployeeID)
+	timeRecordID, err := t.Service.RegisterTimeRecord(ctx, req.Time, req.Description, req.EmployeeID, req.CompanyID, t.AuthMiddleware.Claims.EmployeeID)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()

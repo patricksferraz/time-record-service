@@ -12,6 +12,7 @@ type Base struct {
 
 type RegisterTimeRecordRequest struct {
 	EmployeeID  string    `json:"employee_id,omitempty" binding:"required,uuid"`
+	CompanyID   string    `json:"company_id,omitempty" binding:"required,uuid"`
 	Time        time.Time `json:"time,omitempty" time_format:"RFC3339" binding:"required"`
 	Description string    `json:"description,omitempty"`
 }

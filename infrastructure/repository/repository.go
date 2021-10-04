@@ -100,7 +100,7 @@ func (r *Repository) CreateEmployee(ctx context.Context, employee *entity.Employ
 
 func (r *Repository) FindEmployee(ctx context.Context, id string) (*entity.Employee, error) {
 	var employee entity.Employee
-	r.P.Db.Preload("Company").First(&employee, "id = ?", id)
+	r.P.Db.Preload("Companies").First(&employee, "id = ?", id)
 
 	if employee.ID == "" {
 		return nil, fmt.Errorf("no employee found")
