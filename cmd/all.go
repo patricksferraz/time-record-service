@@ -79,7 +79,7 @@ func allCmd() *cobra.Command {
 				log.Fatal("cannot start kafka producer", err)
 			}
 
-			go kafka.StartKafkaProcessor(database, servers, groupId, kp, kc)
+			go kafka.StartKafkaProcessor(database, kp, kc)
 			go rest.StartRestServer(database, authConn, kp, restPort)
 			grpc.StartGrpcServer(database, authConn, kp, grpcPort)
 		},

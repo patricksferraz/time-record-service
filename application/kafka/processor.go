@@ -9,11 +9,11 @@ import (
 	"github.com/c-4u/time-record-service/infrastructure/repository"
 )
 
-func StartKafkaProcessor(database *db.Postgres, servers, groupId string, kafkaProducer *external.KafkaProducer, kafkaConsumer *external.KafkaConsumer) {
+func StartKafkaProcessor(database *db.Postgres, kafkaProducer *external.KafkaProducer, kafkaConsumer *external.KafkaConsumer) {
 	repository := repository.NewRepository(database, kafkaProducer)
 	service := service.NewService(repository)
 
-	fmt.Println("kafka consumer has been started")
+	fmt.Println("kafka pocessor has been started")
 	processor := NewKafkaProcessor(service, kafkaConsumer)
 	processor.Consume()
 }
