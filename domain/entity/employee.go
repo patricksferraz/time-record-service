@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/asaskevich/govalidator"
@@ -18,17 +19,12 @@ func init() {
 type Employee struct {
 	Base        `json:",inline" valid:"required"`
 	Pis         string        `json:"pis" gorm:"column:pis;type:varchar(25);not null;unique" valid:"pis"`
-	TimeRecords []*TimeRecord `json:"time_records,omitempty" gorm:"ForeignKey:EmployeeID" valid:"-"`
-	CompanyID   string        `json:"company_id" gorm:"column:company_id;type:uuid;not null" valid:"uuid"`
-	Company     *Company      `json:"-" valid:"-"`
+	TimeRecords []*TimeRecord `json:"-" gorm:"ForeignKey:EmployeeID" valid:"-"`
+	Companies   []*Company    `json:"-" gorm:"many2many:companies_employees" valid:"-"`
 }
 
-func NewEmployee(id, pis string, company *Company) (*Employee, error) {
-	entity := &Employee{
-		Pis:       pis,
-		CompanyID: company.ID,
-		Company:   company,
-	}
+func NewEmployee(id, pis string) (*Employee, error) {
+	entity := &Employee{Pis: pis}
 	entity.ID = id
 	entity.CreatedAt = time.Now()
 
@@ -43,4 +39,21 @@ func NewEmployee(id, pis string, company *Company) (*Employee, error) {
 func (e *Employee) isValid() error {
 	_, err := govalidator.ValidateStruct(e)
 	return err
+}
+
+func (e *Employee) AddCompany(company *Company) error {
+	e.Companies = append(e.Companies, company)
+	e.UpdatedAt = time.Now()
+	err := e.isValid()
+	return err
+}
+
+func (e *Employee) GetCompany(companyID string) (*Company, error) {
+	for _, company := range e.Companies {
+		if company.ID == companyID {
+			return company, nil
+		}
+	}
+
+	return nil, fmt.Errorf("employee does not belong to the company %s", companyID)
 }

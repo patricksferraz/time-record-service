@@ -12,7 +12,7 @@ func init() {
 
 type Company struct {
 	Base      `json:",inline" valid:"required"`
-	Employees []*Employee `json:"employees,omitempty" gorm:"ForeignKey:CompanyID" valid:"-"`
+	Employees []*Employee `json:"-" gorm:"many2many:companies_employees" valid:"-"`
 }
 
 func NewCompany(id string) (*Company, error) {

@@ -25,6 +25,7 @@ import (
 	"github.com/c-4u/time-record-service/infrastructure/db"
 	"github.com/c-4u/time-record-service/infrastructure/external"
 	"github.com/c-4u/time-record-service/utils"
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
@@ -32,8 +33,8 @@ import (
 // grpcCmd represents the grpc command
 func grpcCmd() *cobra.Command {
 	var grpcPort int
-	// var uri string
-	// var dbName string
+	var servers string
+	var groupId string
 	var dsn string
 	var dsnType string
 
@@ -63,16 +64,26 @@ func grpcCmd() *cobra.Command {
 			}
 			defer authConn.Close()
 
-			grpc.StartGrpcServer(database, authConn, grpcPort)
+			deliveryChan := make(chan ckafka.Event)
+			k, err := external.NewKafkaProducer(servers, deliveryChan)
+			if err != nil {
+				log.Fatal("cannot start kafka processor", err)
+			}
+
+			grpc.StartGrpcServer(database, authConn, k, grpcPort)
 		},
 	}
 
 	dDsn := os.Getenv("DSN")
 	sDsnType := os.Getenv("DSN_TYPE")
+	dServers := utils.GetEnv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9094")
+	dGroupId := utils.GetEnv("KAFKA_CONSUMER_GROUP_ID", "time-record-service")
 
 	grpcCmd.Flags().StringVarP(&dsn, "dsn", "d", dDsn, "dsn")
 	grpcCmd.Flags().StringVarP(&dsnType, "dsnType", "t", sDsnType, "dsn type")
 	grpcCmd.Flags().IntVarP(&grpcPort, "port", "p", 50051, "gRPC Server port")
+	grpcCmd.Flags().StringVarP(&servers, "servers", "s", dServers, "kafka servers")
+	grpcCmd.Flags().StringVarP(&groupId, "groupId", "i", dGroupId, "kafka group id")
 
 	return grpcCmd
 }

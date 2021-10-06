@@ -5,21 +5,22 @@ import (
 	"log"
 	"net"
 
-	"github.com/c-4u/time-record-service/application/grpc/pb"
 	"github.com/c-4u/time-record-service/domain/service"
 	"github.com/c-4u/time-record-service/infrastructure/db"
+	"github.com/c-4u/time-record-service/infrastructure/external"
 	"github.com/c-4u/time-record-service/infrastructure/repository"
+	"github.com/c-4u/time-record-service/proto/pb"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.elastic.co/apm/module/apmgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-func StartGrpcServer(database *db.Postgres, authConn *grpc.ClientConn, port int) {
+func StartGrpcServer(database *db.Postgres, authConn *grpc.ClientConn, kafkaProducer *external.KafkaProducer, port int) {
 
-	authService := service.NewAuthService(authConn)
-	interceptor := NewAuthInterceptor(authService)
-	repository := repository.NewPostgresRepository(database)
+	authClient := external.NewAuthClient(authConn)
+	interceptor := NewAuthInterceptor(authClient)
+	repository := repository.NewRepository(database, kafkaProducer)
 	service := service.NewService(repository)
 	grpcService := NewGrpcService(service, interceptor)
 

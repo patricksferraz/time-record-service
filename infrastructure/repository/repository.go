@@ -6,34 +6,38 @@ import (
 
 	"github.com/c-4u/time-record-service/domain/entity"
 	"github.com/c-4u/time-record-service/infrastructure/db"
+	"github.com/c-4u/time-record-service/infrastructure/external"
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-type PostgresRepository struct {
+type Repository struct {
 	P *db.Postgres
+	K *external.KafkaProducer
 }
 
-func NewPostgresRepository(db *db.Postgres) *PostgresRepository {
-	return &PostgresRepository{
+func NewRepository(db *db.Postgres, kafkaProducer *external.KafkaProducer) *Repository {
+	return &Repository{
 		P: db,
+		K: kafkaProducer,
 	}
 }
 
-func (r *PostgresRepository) SaveEmployee(ctx context.Context, employee *entity.Employee) error {
+func (r *Repository) SaveEmployee(ctx context.Context, employee *entity.Employee) error {
 	err := r.P.Db.Save(employee).Error
 	return err
 }
 
-func (r *PostgresRepository) RegisterTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) error {
+func (r *Repository) RegisterTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) error {
 	err := r.P.Db.Create(timeRecord).Error
 	return err
 }
 
-func (r *PostgresRepository) SaveTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) error {
+func (r *Repository) SaveTimeRecord(ctx context.Context, timeRecord *entity.TimeRecord) error {
 	err := r.P.Db.Save(timeRecord).Error
 	return err
 }
 
-func (r *PostgresRepository) FindTimeRecord(ctx context.Context, id string) (*entity.TimeRecord, error) {
+func (r *Repository) FindTimeRecord(ctx context.Context, id string) (*entity.TimeRecord, error) {
 	var timeRecord entity.TimeRecord
 	r.P.Db.Preload("Employee").First(&timeRecord, "id = ?", id)
 
@@ -44,11 +48,14 @@ func (r *PostgresRepository) FindTimeRecord(ctx context.Context, id string) (*en
 	return &timeRecord, nil
 }
 
-func (r *PostgresRepository) SearchTimeRecords(ctx context.Context, filter *entity.Filter) (*string, []*entity.TimeRecord, error) {
+func (r *Repository) SearchTimeRecords(ctx context.Context, filter *entity.Filter) (*string, []*entity.TimeRecord, error) {
 	var timeRecords []*entity.TimeRecord
 
-	q := r.P.Db.Order("token desc").Limit(filter.PageSize).Preload("Employee")
+	q := r.P.Db.Order("token desc").Preload("Employee")
 
+	if filter.PageSize != 0 {
+		q = q.Limit(filter.PageSize)
+	}
 	if !filter.FromDate.IsZero() {
 		q = q.Where("time >= ?", filter.FromDate)
 	}
@@ -71,6 +78,9 @@ func (r *PostgresRepository) SearchTimeRecords(ctx context.Context, filter *enti
 	if filter.CreatedBy != "" {
 		q = q.Where("created_by = ?", filter.CreatedBy)
 	}
+	if filter.CompanyID != "" {
+		q = q.Where("company_id = ?", filter.CompanyID)
+	}
 	if filter.PageToken != "" {
 		q = q.Where("token < ?", filter.PageToken)
 	}
@@ -89,14 +99,14 @@ func (r *PostgresRepository) SearchTimeRecords(ctx context.Context, filter *enti
 	return &nextPageToken, timeRecords, nil
 }
 
-func (r *PostgresRepository) CreateEmployee(ctx context.Context, employee *entity.Employee) error {
+func (r *Repository) CreateEmployee(ctx context.Context, employee *entity.Employee) error {
 	err := r.P.Db.Create(employee).Error
 	return err
 }
 
-func (r *PostgresRepository) FindEmployee(ctx context.Context, id string) (*entity.Employee, error) {
+func (r *Repository) FindEmployee(ctx context.Context, id string) (*entity.Employee, error) {
 	var employee entity.Employee
-	r.P.Db.Preload("Company").First(&employee, "id = ?", id)
+	r.P.Db.Preload("Companies").First(&employee, "id = ?", id)
 
 	if employee.ID == "" {
 		return nil, fmt.Errorf("no employee found")
@@ -105,12 +115,12 @@ func (r *PostgresRepository) FindEmployee(ctx context.Context, id string) (*enti
 	return &employee, nil
 }
 
-func (r *PostgresRepository) CreateCompany(ctx context.Context, company *entity.Company) error {
+func (r *Repository) CreateCompany(ctx context.Context, company *entity.Company) error {
 	err := r.P.Db.Create(company).Error
 	return err
 }
 
-func (r *PostgresRepository) FindCompany(ctx context.Context, id string) (*entity.Company, error) {
+func (r *Repository) FindCompany(ctx context.Context, id string) (*entity.Company, error) {
 	var company entity.Company
 	r.P.Db.First(&company, "id = ?", id)
 
@@ -119,4 +129,17 @@ func (r *PostgresRepository) FindCompany(ctx context.Context, id string) (*entit
 	}
 
 	return &company, nil
+}
+
+func (r *Repository) PublishEvent(ctx context.Context, msg, topic, key string) error {
+	message := &ckafka.Message{
+		TopicPartition: ckafka.TopicPartition{Topic: &topic, Partition: ckafka.PartitionAny},
+		Value:          []byte(msg),
+		Key:            []byte(key),
+	}
+	err := r.K.Producer.Produce(message, r.K.DeliveryChan)
+	if err != nil {
+		return err
+	}
+	return nil
 }

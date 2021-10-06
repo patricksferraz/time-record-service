@@ -24,6 +24,7 @@ import (
 	"github.com/c-4u/time-record-service/infrastructure/external"
 	"github.com/c-4u/time-record-service/infrastructure/external/topic"
 	"github.com/c-4u/time-record-service/utils"
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/spf13/cobra"
 )
 
@@ -53,11 +54,18 @@ func kafkaCmd() *cobra.Command {
 			}
 			defer database.Db.Close()
 
-			k, err := external.NewKafka(servers, groupId, []string{topic.NEW_EMPLOYEE, topic.NEW_COMPANY})
+			deliveryChan := make(chan ckafka.Event)
+			kc, err := external.NewKafkaConsumer(servers, groupId, topic.CONSUMER_TOPICS)
 			if err != nil {
-				log.Fatal("cannot start kafka processor", err)
+				log.Fatal("cannot start kafka consumer", err)
 			}
-			kafka.StartKafkaProcessor(database, servers, groupId, k)
+
+			kp, err := external.NewKafkaProducer(servers, deliveryChan)
+			if err != nil {
+				log.Fatal("cannot start kafka producer", err)
+			}
+
+			kafka.StartKafkaProcessor(database, kp, kc)
 		},
 	}
 

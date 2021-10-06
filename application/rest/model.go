@@ -12,6 +12,7 @@ type Base struct {
 
 type RegisterTimeRecordRequest struct {
 	EmployeeID  string    `json:"employee_id,omitempty" binding:"required,uuid"`
+	CompanyID   string    `json:"company_id,omitempty" binding:"required,uuid"`
 	Time        time.Time `json:"time,omitempty" time_format:"RFC3339" binding:"required"`
 	Description string    `json:"description,omitempty"`
 }
@@ -32,6 +33,7 @@ type TimeRecord struct {
 	ApprovedBy    string    `json:"approved_by,omitempty"`
 	RefusedBy     string    `json:"refused_by,omitempty"`
 	CreatedBy     string    `json:"created_by,omitempty"`
+	CompanyID     string    `json:"company_id,omitempty"`
 }
 
 type HTTPResponse struct {
@@ -77,6 +79,7 @@ type Filter struct {
 	ApprovedBy string    `json:"approved_by" form:"approved_by"`
 	RefusedBy  string    `json:"refused_by" form:"refused_by"`
 	CreatedBy  string    `json:"created_by" form:"created_by"`
+	CompanyID  string    `json:"company_id" form:"company_id"`
 	PageSize   int       `json:"page_size" form:"page_size" default:"10"`
 	PageToken  string    `json:"page_token" form:"page_token"`
 }

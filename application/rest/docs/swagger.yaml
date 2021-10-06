@@ -36,6 +36,8 @@ definitions:
     type: object
   rest.RegisterTimeRecordRequest:
     properties:
+      company_id:
+        type: string
       description:
         type: string
       employee_id:
@@ -43,6 +45,7 @@ definitions:
       time:
         type: string
     required:
+    - company_id
     - employee_id
     - time
     type: object
@@ -63,6 +66,8 @@ definitions:
   rest.TimeRecord:
     properties:
       approved_by:
+        type: string
+      company_id:
         type: string
       created_at:
         type: string
@@ -107,6 +112,9 @@ paths:
       parameters:
       - in: query
         name: approved_by
+        type: string
+      - in: query
+        name: company_id
         type: string
       - in: query
         name: created_by
@@ -303,6 +311,9 @@ paths:
         in: query
         name: as_file
         type: boolean
+      - in: query
+        name: company_id
+        type: string
       - in: query
         name: created_by
         type: string

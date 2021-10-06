@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/c-4u/time-record-service/domain/entity"
-	"github.com/c-4u/time-record-service/domain/service"
+	"github.com/c-4u/time-record-service/infrastructure/external"
 	"github.com/c-4u/time-record-service/logger"
 	"github.com/gin-gonic/gin"
 	"go.elastic.co/apm"
@@ -14,7 +14,7 @@ import (
 )
 
 type AuthMiddleware struct {
-	AuthService *service.AuthService
+	AuthClient  *external.AuthClient
 	Claims      *entity.Claims
 	AccessToken *string
 }
@@ -33,7 +33,7 @@ func (a *AuthMiddleware) Require() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := a.AuthService.Verify(ctx, accessToken)
+		claims, err := a.AuthClient.Verify(ctx, accessToken)
 		if err != nil {
 			apm.CaptureError(ctx, err).Send()
 			ctx.JSON(http.StatusForbidden, gin.H{"error": fmt.Sprintf("access token is invalid: %v", err)})
@@ -56,8 +56,8 @@ func (a *AuthMiddleware) Require() gin.HandlerFunc {
 	}
 }
 
-func NewAuthMiddleware(authService *service.AuthService) *AuthMiddleware {
+func NewAuthMiddleware(authClient *external.AuthClient) *AuthMiddleware {
 	return &AuthMiddleware{
-		AuthService: authService,
+		AuthClient: authClient,
 	}
 }
