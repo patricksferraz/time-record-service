@@ -33,6 +33,7 @@ type TimeRecord struct {
 	ApprovedBy    string    `json:"approved_by,omitempty"`
 	RefusedBy     string    `json:"refused_by,omitempty"`
 	CreatedBy     string    `json:"created_by,omitempty"`
+	CompanyID     string    `json:"company_id,omitempty"`
 }
 
 type HTTPResponse struct {
@@ -78,6 +79,7 @@ type Filter struct {
 	ApprovedBy string    `json:"approved_by" form:"approved_by"`
 	RefusedBy  string    `json:"refused_by" form:"refused_by"`
 	CreatedBy  string    `json:"created_by" form:"created_by"`
+	CompanyID  string    `json:"company_id" form:"company_id"`
 	PageSize   int       `json:"page_size" form:"page_size" default:"10"`
 	PageToken  string    `json:"page_token" form:"page_token"`
 }

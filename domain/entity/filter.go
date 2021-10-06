@@ -19,6 +19,7 @@ type Filter struct {
 	ApprovedBy string           `json:"approved_by" valid:"uuid,optional"`
 	RefusedBy  string           `json:"refused_by" valid:"uuid,optional"`
 	CreatedBy  string           `json:"created_by" valid:"uuid,optional"`
+	CompanyID  string           `json:"company_id" valid:"uuid,optional"`
 	PageSize   int              `json:"page_size" valid:"optional"`
 	PageToken  string           `json:"page_token" valid:"optional"`
 }
@@ -33,11 +34,11 @@ func (e *Filter) isValid() error {
 	return err
 }
 
-func NewFilter(fromDate, toDate time.Time, status int, employeeID, approvedBy, refusedBy, createdBy string, pageSize int, pageToken string) (*Filter, error) {
+func NewFilter(fromDate, toDate time.Time, status int, employeeID, approvedBy, refusedBy, createdBy, companyID string, pageSize int, pageToken string) (*Filter, error) {
 
-	if pageSize == 0 {
-		pageSize = 10
-	}
+	// if pageSize == 0 {
+	// 	pageSize = 10
+	// }
 
 	entity := &Filter{
 		FromDate:   fromDate,
@@ -47,6 +48,7 @@ func NewFilter(fromDate, toDate time.Time, status int, employeeID, approvedBy, r
 		ApprovedBy: approvedBy,
 		RefusedBy:  refusedBy,
 		CreatedBy:  createdBy,
+		CompanyID:  companyID,
 		PageSize:   pageSize,
 		PageToken:  pageToken,
 	}

@@ -134,7 +134,7 @@ func (t *GrpcService) SearchTimeRecords(ctx context.Context, in *pb.SearchTimeRe
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling SearchTimeRecords request")
 
-	nextPageToken, timeRecords, err := t.Service.SearchTimeRecords(ctx, in.Filter.FromDate.AsTime(), in.Filter.ToDate.AsTime(), int(in.Filter.Status), in.Filter.EmployeeId, in.Filter.ApprovedBy, in.Filter.RefusedBy, in.Filter.CreatedBy, int(in.Filter.PageSize), in.Filter.PageToken)
+	nextPageToken, timeRecords, err := t.Service.SearchTimeRecords(ctx, in.Filter.FromDate.AsTime(), in.Filter.ToDate.AsTime(), int(in.Filter.Status), in.Filter.EmployeeId, in.Filter.ApprovedBy, in.Filter.RefusedBy, in.Filter.CreatedBy, in.Filter.CompanyId, int(in.Filter.PageSize), in.Filter.PageToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -156,6 +156,7 @@ func (t *GrpcService) SearchTimeRecords(ctx context.Context, in *pb.SearchTimeRe
 				EmployeeId:    *timeRecord.EmployeeID,
 				ApprovedBy:    *timeRecord.ApprovedBy,
 				RefusedBy:     *timeRecord.RefusedBy,
+				CompanyId:     *timeRecord.CompanyID,
 				CreatedAt:     timestamppb.New(timeRecord.CreatedAt),
 				UpdatedAt:     timestamppb.New(timeRecord.UpdatedAt),
 			},
@@ -172,7 +173,7 @@ func (t *GrpcService) ExportTimeRecords(ctx context.Context, in *pb.ExportTimeRe
 	log := logger.Log.WithFields(apmlogrus.TraceContext(ctx))
 	log.WithField("in", in).Info("handling ExportTimeRecords request")
 
-	nextPageToken, registers, err := t.Service.ExportTimeRecords(ctx, in.Filter.FromDate.AsTime(), in.Filter.ToDate.AsTime(), int(in.Filter.Status), in.Filter.EmployeeId, in.Filter.ApprovedBy, in.Filter.RefusedBy, in.Filter.CreatedBy, int(in.Filter.PageSize), in.Filter.PageToken, *t.AuthInterceptor.AccessToken)
+	nextPageToken, registers, err := t.Service.ExportTimeRecords(ctx, in.Filter.FromDate.AsTime(), in.Filter.ToDate.AsTime(), int(in.Filter.Status), in.Filter.EmployeeId, in.Filter.ApprovedBy, in.Filter.RefusedBy, in.Filter.CreatedBy, in.Filter.CompanyId, int(in.Filter.PageSize), in.Filter.PageToken, *t.AuthInterceptor.AccessToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()

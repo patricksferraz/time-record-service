@@ -64,7 +64,7 @@ func (p *KafkaProcessor) createEmployee(msg *ckafka.Message) error {
 		return err
 	}
 
-	err = p.Service.CreateEmployee(context.TODO(), employeeEvent.Employee.ID, employeeEvent.Employee.Pis, employeeEvent.Employee.CompanyID)
+	err = p.Service.CreateEmployee(context.TODO(), employeeEvent.Employee.ID, employeeEvent.Employee.Pis)
 	if err != nil {
 		return err
 	}

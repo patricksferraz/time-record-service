@@ -19,11 +19,11 @@ func init() {
 type Employee struct {
 	Base        `json:",inline" valid:"required"`
 	Pis         string        `json:"pis" gorm:"column:pis;type:varchar(25);not null;unique" valid:"pis"`
-	TimeRecords []*TimeRecord `json:"time_records,omitempty" gorm:"ForeignKey:EmployeeID" valid:"-"`
-	Companies   []*Company    `json:"companies,omitempty" gorm:"many2many:companies_employees" valid:"-"`
+	TimeRecords []*TimeRecord `json:"-" gorm:"ForeignKey:EmployeeID" valid:"-"`
+	Companies   []*Company    `json:"-" gorm:"many2many:companies_employees" valid:"-"`
 }
 
-func NewEmployee(id, pis string, company *Company) (*Employee, error) {
+func NewEmployee(id, pis string) (*Employee, error) {
 	entity := &Employee{Pis: pis}
 	entity.ID = id
 	entity.CreatedAt = time.Now()

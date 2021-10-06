@@ -55,6 +55,11 @@ var doc = `{
                     },
                     {
                         "type": "string",
+                        "name": "company_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "created_by",
                         "in": "query"
                     },
@@ -199,6 +204,11 @@ var doc = `{
                         "type": "boolean",
                         "default": false,
                         "name": "as_file",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "company_id",
                         "in": "query"
                     },
                     {
@@ -483,10 +493,14 @@ var doc = `{
         "rest.RegisterTimeRecordRequest": {
             "type": "object",
             "required": [
+                "company_id",
                 "employee_id",
                 "time"
             ],
             "properties": {
+                "company_id": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -524,6 +538,9 @@ var doc = `{
             "type": "object",
             "properties": {
                 "approved_by": {
+                    "type": "string"
+                },
+                "company_id": {
                     "type": "string"
                 },
                 "created_at": {

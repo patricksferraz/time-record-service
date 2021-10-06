@@ -51,8 +51,11 @@ func (r *Repository) FindTimeRecord(ctx context.Context, id string) (*entity.Tim
 func (r *Repository) SearchTimeRecords(ctx context.Context, filter *entity.Filter) (*string, []*entity.TimeRecord, error) {
 	var timeRecords []*entity.TimeRecord
 
-	q := r.P.Db.Order("token desc").Limit(filter.PageSize).Preload("Employee")
+	q := r.P.Db.Order("token desc").Preload("Employee")
 
+	if filter.PageSize != 0 {
+		q = q.Limit(filter.PageSize)
+	}
 	if !filter.FromDate.IsZero() {
 		q = q.Where("time >= ?", filter.FromDate)
 	}
@@ -74,6 +77,9 @@ func (r *Repository) SearchTimeRecords(ctx context.Context, filter *entity.Filte
 	}
 	if filter.CreatedBy != "" {
 		q = q.Where("created_by = ?", filter.CreatedBy)
+	}
+	if filter.CompanyID != "" {
+		q = q.Where("company_id = ?", filter.CompanyID)
 	}
 	if filter.PageToken != "" {
 		q = q.Where("token < ?", filter.PageToken)

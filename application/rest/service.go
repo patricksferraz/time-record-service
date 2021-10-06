@@ -285,7 +285,7 @@ func (t *RestService) SearchTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("query", body).Info("query TimeRecords request")
 
-	nextPageToken, timeRecords, err := t.Service.SearchTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.PageSize, body.PageToken)
+	nextPageToken, timeRecords, err := t.Service.SearchTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.CompanyID, body.PageSize, body.PageToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -341,7 +341,7 @@ func (t *RestService) ExportTimeRecords(ctx *gin.Context) {
 	}
 	log.WithField("query", body).Info("query TimeRecords request")
 
-	nextPageToken, registers, err := t.Service.ExportTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.PageSize, body.PageToken, *t.AuthMiddleware.AccessToken)
+	nextPageToken, registers, err := t.Service.ExportTimeRecords(ctx, body.FromDate, body.ToDate, body.Status, body.EmployeeID, body.ApprovedBy, body.RefusedBy, body.CreatedBy, body.CompanyID, body.PageSize, body.PageToken, *t.AuthMiddleware.AccessToken)
 	if err != nil {
 		log.WithError(err)
 		apm.CaptureError(ctx, err).Send()
@@ -405,7 +405,7 @@ func (t *RestService) ExportTimeRecords(ctx *gin.Context) {
 
 		_t := time.Now()
 		m := http.DetectContentType(b[:512])
-		filename := fmt.Sprintf("%d%02d%02d_%02d%02d%02d_%s.txt", _t.Year(), _t.Month(), _t.Day(), _t.Hour(), _t.Minute(), _t.Second(), *nextPageToken)
+		filename := fmt.Sprintf("%d%02d%02d%02d%02d%02d%s.txt", _t.Year(), _t.Month(), _t.Day(), _t.Hour(), _t.Minute(), _t.Second(), *nextPageToken)
 		ctx.Header("Content-Disposition", "attachment; filename="+filename)
 		ctx.Data(http.StatusOK, m, b)
 	} else {

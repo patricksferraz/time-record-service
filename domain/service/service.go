@@ -131,8 +131,8 @@ func (s *Service) FindTimeRecord(ctx context.Context, id string) (*entity.TimeRe
 	return timeRecord, nil
 }
 
-func (s *Service) SearchTimeRecords(ctx context.Context, fromDate, toDate time.Time, status int, employeeID, approvedBy, refusedBy, createdBy string, pageSize int, pageToken string) (*string, []*entity.TimeRecord, error) {
-	filter, err := entity.NewFilter(fromDate, toDate, status, employeeID, approvedBy, refusedBy, createdBy, pageSize, pageToken)
+func (s *Service) SearchTimeRecords(ctx context.Context, fromDate, toDate time.Time, status int, employeeID, approvedBy, refusedBy, createdBy, companyID string, pageSize int, pageToken string) (*string, []*entity.TimeRecord, error) {
+	filter, err := entity.NewFilter(fromDate, toDate, status, employeeID, approvedBy, refusedBy, createdBy, companyID, pageSize, pageToken)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -145,8 +145,8 @@ func (s *Service) SearchTimeRecords(ctx context.Context, fromDate, toDate time.T
 	return nextPageToken, timeRecords, nil
 }
 
-func (s *Service) ExportTimeRecords(ctx context.Context, fromDate, toDate time.Time, status int, employeeID, approvedBy, refusedBy, createdBy string, pageSize int, pageToken, accessToken string) (*string, []*exporter.Register, error) {
-	filter, err := entity.NewFilter(fromDate, toDate, status, employeeID, approvedBy, refusedBy, createdBy, pageSize, pageToken)
+func (s *Service) ExportTimeRecords(ctx context.Context, fromDate, toDate time.Time, status int, employeeID, approvedBy, refusedBy, createdBy, companyID string, pageSize int, pageToken, accessToken string) (*string, []*exporter.Register, error) {
+	filter, err := entity.NewFilter(fromDate, toDate, status, employeeID, approvedBy, refusedBy, createdBy, companyID, pageSize, pageToken)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -178,13 +178,8 @@ func (s *Service) CreateCompany(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *Service) CreateEmployee(ctx context.Context, id, pis, companyID string) error {
-	company, err := s.Repository.FindCompany(ctx, companyID)
-	if err != nil {
-		return err
-	}
-
-	employee, err := entity.NewEmployee(id, pis, company)
+func (s *Service) CreateEmployee(ctx context.Context, id, pis string) error {
+	employee, err := entity.NewEmployee(id, pis)
 	if err != nil {
 		return err
 	}

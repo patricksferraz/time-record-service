@@ -39,6 +39,11 @@
                     },
                     {
                         "type": "string",
+                        "name": "company_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "created_by",
                         "in": "query"
                     },
@@ -183,6 +188,11 @@
                         "type": "boolean",
                         "default": false,
                         "name": "as_file",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "company_id",
                         "in": "query"
                     },
                     {
@@ -467,10 +477,14 @@
         "rest.RegisterTimeRecordRequest": {
             "type": "object",
             "required": [
+                "company_id",
                 "employee_id",
                 "time"
             ],
             "properties": {
+                "company_id": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -508,6 +522,9 @@
             "type": "object",
             "properties": {
                 "approved_by": {
+                    "type": "string"
+                },
+                "company_id": {
                     "type": "string"
                 },
                 "created_at": {
