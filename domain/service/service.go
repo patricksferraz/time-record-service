@@ -95,6 +95,21 @@ func (s *Service) ApproveTimeRecord(ctx context.Context, id, approvedBy string) 
 		return err
 	}
 
+	event, err := entity.NewTimeRecordEvent(timeRecord)
+	if err != nil {
+		return err
+	}
+
+	msg, err := event.ToJson()
+	if err != nil {
+		return err
+	}
+
+	err = s.Repository.PublishEvent(ctx, string(msg), topic.APPROVE_TIME_RECORD, *timeRecord.EmployeeID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -115,6 +130,21 @@ func (s *Service) RefuseTimeRecord(ctx context.Context, id, refusedReason, refus
 	}
 
 	err = s.Repository.SaveTimeRecord(ctx, timeRecord)
+	if err != nil {
+		return err
+	}
+
+	event, err := entity.NewTimeRecordEvent(timeRecord)
+	if err != nil {
+		return err
+	}
+
+	msg, err := event.ToJson()
+	if err != nil {
+		return err
+	}
+
+	err = s.Repository.PublishEvent(ctx, string(msg), topic.REFUSE_TIME_RECORD, *timeRecord.EmployeeID)
 	if err != nil {
 		return err
 	}
