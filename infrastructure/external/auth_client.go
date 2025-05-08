@@ -3,8 +3,8 @@ package external
 import (
 	"context"
 
-	"github.com/c-4u/time-record-service/domain/entity"
-	"github.com/c-4u/time-record-service/proto/pb"
+	"github.com/patricksferraz/time-record-service/domain/entity"
+	"github.com/patricksferraz/time-record-service/proto/pb"
 	"google.golang.org/grpc"
 )
 

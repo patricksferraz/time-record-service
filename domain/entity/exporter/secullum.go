@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/c-4u/time-record-service/domain/entity"
+	"github.com/patricksferraz/time-record-service/domain/entity"
 )
 
 type SecullumExporter struct {

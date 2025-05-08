@@ -3,9 +3,9 @@ package grpc
 import (
 	"context"
 
-	"github.com/c-4u/time-record-service/domain/entity"
-	"github.com/c-4u/time-record-service/infrastructure/external"
-	"github.com/c-4u/time-record-service/logger"
+	"github.com/patricksferraz/time-record-service/domain/entity"
+	"github.com/patricksferraz/time-record-service/infrastructure/external"
+	"github.com/patricksferraz/time-record-service/logger"
 	"go.elastic.co/apm"
 	"go.elastic.co/apm/module/apmlogrus"
 	"google.golang.org/grpc"

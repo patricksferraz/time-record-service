@@ -1,4 +1,4 @@
-module github.com/c-4u/time-record-service
+module github.com/patricksferraz/time-record-service
 
 go 1.16
 

@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/c-4u/time-record-service/domain/entity"
+	"github.com/patricksferraz/time-record-service/domain/entity"
 )
 
 type RepositoryInterface interface {

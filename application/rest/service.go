@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/c-4u/time-record-service/domain/entity"
-	"github.com/c-4u/time-record-service/domain/service"
-	"github.com/c-4u/time-record-service/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/patricksferraz/time-record-service/domain/entity"
+	"github.com/patricksferraz/time-record-service/domain/service"
+	"github.com/patricksferraz/time-record-service/logger"
 	"go.elastic.co/apm"
 	"go.elastic.co/apm/module/apmlogrus"
 )

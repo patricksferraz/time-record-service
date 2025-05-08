@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: time-record
-        image: ghcr.io/c-4u/time-record-service:latest
+        image: ghcr.io/patricksferraz/time-record-service:latest
         ports:
         - name: grpc
           containerPort: 50051

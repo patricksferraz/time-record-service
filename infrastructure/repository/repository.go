@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/c-4u/time-record-service/domain/entity"
-	"github.com/c-4u/time-record-service/infrastructure/db"
-	"github.com/c-4u/time-record-service/infrastructure/external"
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/patricksferraz/time-record-service/domain/entity"
+	"github.com/patricksferraz/time-record-service/infrastructure/db"
+	"github.com/patricksferraz/time-record-service/infrastructure/external"
 )
 
 type Repository struct {

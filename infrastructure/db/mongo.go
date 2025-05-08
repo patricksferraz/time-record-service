@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	_ "github.com/c-4u/time-record-service/infrastructure/db/migrations"
+	_ "github.com/patricksferraz/time-record-service/infrastructure/db/migrations"
 	migrate "github.com/xakep666/mongo-migrate"
 	"go.elastic.co/apm/module/apmmongo"
 	"go.mongodb.org/mongo-driver/mongo"

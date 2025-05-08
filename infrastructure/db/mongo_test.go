@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/c-4u/time-record-service/infrastructure/db"
-	"github.com/c-4u/time-record-service/utils"
+	"github.com/patricksferraz/time-record-service/infrastructure/db"
+	"github.com/patricksferraz/time-record-service/utils"
 	"github.com/stretchr/testify/require"
 )
 

@@ -1,251 +1,126 @@
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Thanks again! Now go create something AMAZING! :D
-***
-***
-***
-*** To avoid retyping too much info. Do a search and replace for the following:
-*** github_username, repo_name, twitter_handle, email, project_title, project_description
--->
+# Time Record Service
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
+[![Go Report Card](https://goreportcard.com/badge/github.com/patricksferraz/time-record-service)](https://goreportcard.com/report/github.com/patricksferraz/time-record-service)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GoDoc](https://godoc.org/github.com/patricksferraz/time-record-service?status.svg)](https://godoc.org/github.com/patricksferraz/time-record-service)
 
-<!-- PROJECT LOGO -->
-<br />
-<p align="center">
-  <a href="https://github.com/c-4u/time-record-service">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
+A modern, scalable time record management service built with Go, featuring gRPC and REST APIs, event-driven architecture, and comprehensive monitoring.
 
-  <h3 align="center">TimeClock - Time Record Service</h3>
+## 🌟 Features
 
-  <p align="center">
-    Microservice for time recording
-    <br />
-    <a href="https://github.com/c-4u/time-record-service"><strong>Explore the docs »</strong></a>
-    <!-- <br />
-    <br />
-    <a href="https://github.com/c-4u/time-record-service">View Demo</a>
-    ·
-    <a href="https://github.com/c-4u/time-record-service">Report Bug</a>
-    ·
-    <a href="https://github.com/c-4u/time-record-service">Request Feature</a>-->
-  </p>
-</p>
+- **Dual API Support**: REST and gRPC endpoints for flexible integration
+- **Event-Driven Architecture**: Kafka integration for reliable event processing
+- **Database Management**: PostgreSQL with pgAdmin interface
+- **Monitoring & Observability**: Elastic APM integration
+- **Containerized**: Docker and Kubernetes support
+- **Testing**: Comprehensive test suite with coverage reporting
+- **Documentation**: Swagger/OpenAPI documentation
 
-<!-- TABLE OF CONTENTS -->
-<details open="open">
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <!-- <li><a href="#usage">Usage</a></li> -->
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <!-- <li><a href="#license">License</a></li> -->
-    <li><a href="#contact">Contact</a></li>
-    <!-- <li><a href="#acknowledgements">Acknowledgements</a></li> -->
-  </ol>
-</details>
-
-<!-- ABOUT THE PROJECT -->
-## About The Project
-
-Auth service is a microservice for time recording providing in the application layer the communication by REST and gRPC, it is necessary to set the addr for the authentication service.
-
-<!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
-<!--
-Here's a blank template to get started:
-**To avoid retyping too much info. Do a search and replace with your text editor for the following:**
-`github_username`, `repo_name`, `twitter_handle`, `email`, `project_title`, `project_description` -->
-
-### Built With
-
-- [Go Lang](https://golang.org/)
-- List all: `go list -m all`
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-To get a local copy up and running follow these simple steps.
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Hiring a kubernetes cluster:
-  - [AWS](https://aws.amazon.com/pt/eks/?whats-new-cards.sort-by=item.additionalFields.postDateTime&whats-new-cards.sort-order=desc&eks-blogs.sort-by=item.additionalFields.createdDate&eks-blogs.sort-order=desc)
-  - [Azure](https://azure.microsoft.com/pt-br/services/kubernetes-service/)
-  - [GCP](https://cloud.google.com/kubernetes-engine)
+- Docker and Docker Compose
+- Go 1.16 or later
+- Make (optional, but recommended)
 
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
+### Installation
 
-- Create a secret for github docker registry
+1. Clone the repository:
+```bash
+git clone https://github.com/patricksferraz/time-record-service.git
+cd time-record-service
+```
 
-  ```sh
-  kubectl create secret docker-registry regcred \
-  --docker-server=$DOCKER_REGISTRY_SERVER \
-  --docker-username=$DOCKER_USER \
-  --docker-password=$DOCKER_PASSWORD \
-  --docker-email=$DOCKER_EMAIL
-  ```
+2. Copy the environment file and configure it:
+```bash
+cp .env.example .env
+```
 
-- Create a secret with env credentials
+3. Start the services:
+```bash
+make up
+```
 
-  ```sh
-  # file: credentials
-  DB_DEBUG=true
-  DB_MIGRATE=true
-  DSN_TYPE=postgres
-  DSN="dbname=time-record-service sslmode=disable user=postgres password=pasword host=postgres"
-  ```
+The service will be available at:
+- REST API: http://localhost:8080
+- gRPC: localhost:50051
+- pgAdmin: http://localhost:9000
+- Kafka Control Center: http://localhost:9021
 
-  `kubectl create secret generic time-record-secret --from-env-file ./credentials`
+## 🛠️ Development
 
-### Deploy
+### Building
 
-- `kubectl apply -f ./k8s`
+```bash
+make build
+```
 
-<!-- USAGE EXAMPLES -->
-<!-- ## Usage
+### Running Tests
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+```bash
+make test
+```
 
-_For more examples, please refer to the [Documentation](https://example.com)_ -->
+### Generating gRPC Code
 
-<!-- ROADMAP -->
-## Roadmap
+```bash
+make gen
+```
 
-See the [open issues](https://github.com/c-4u/time-record-service/issues) for a list of proposed features (and known issues).
+### Viewing Logs
 
-<!-- CONTRIBUTING -->
-## Contributing
+```bash
+make logs
+```
 
-Any contributions you make are **greatly appreciated**.
+## 📚 API Documentation
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
+The REST API documentation is available at `/swagger/index.html` when the service is running.
+
+## 🏗️ Architecture
+
+The service follows a clean architecture pattern with the following components:
+
+- **Domain**: Core business logic and entities
+- **Application**: Use cases and business rules
+- **Infrastructure**: External services integration
+- **Interface**: API handlers and controllers
+
+## 🔄 Event Flow
+
+The service processes the following events:
+- `NEW_EMPLOYEE`
+- `NEW_COMPANY`
+- `NEW_TIME_RECORD`
+
+## 📊 Monitoring
+
+The service integrates with Elastic APM for:
+- Performance monitoring
+- Error tracking
+- Distributed tracing
+- Log aggregation
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-__Prerequisites__:
+## 📝 License
 
-- Golang
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-  ```sh
-  wget https://golang.org/dl/go1.16.2.linux-amd64.tar.gz
-  rm -rf /usr/local/go && tar -C /usr/local -xzf go1.16.2.linux-amd64.tar.gz
-  export PATH=$PATH:/usr/local/go/bin
-  ```
+## 👥 Authors
 
-- Docker and docker-compose
+- **Patrick Ferraz** - *Initial work*
 
-  ```sh
-  sudo apt-get install docker docker-compose docker.io -y
-  ```
+## 🙏 Acknowledgments
 
-- Environment
-
-  ```sh
-  # .env
-  TIME_RECORD_GRPC_PORT=50052
-  TIME_RECORD_REST_PORT=8089
-
-  POSTGRES_DB=time-record-service
-  POSTGRES_USER=postgres
-  POSTGRES_PASSWORD=password
-  DB_MIGRATE=true
-  DB_DEBUG=true
-  DB_PORT=5432
-
-  DSN_TYPE=postgres
-  DSN="dbname=${DB_NAME} sslmode=disable user=${DB_USERNAME} password=${DB_PASSWORD} host=postgres"
-
-  PGADMIN_DEFAULT_EMAIL=admin@user.com
-  PGADMIN_DEFAULT_PASSWORD=123456
-
-  AUTH_SERVICE_ADDR=auth-keycloak-acl:50051
-
-  ELASTIC_APM_SERVER_URL=http://apm-server:8200
-
-  KAFKA_BOOTSTRAP_SERVERS=kafka:9094
-  KAFKA_CONSUMER_GROUP_ID=time-record-service
-  ```
-
-__Installation__:
-
-1. Clone the repo
-
-   ```sh
-   git clone https://github.com/c-4u/time-record-service.git
-   ```
-
-2. Run
-
-   ```sh
-   docker-compose up -d
-   ```
-
-3. Test
-
-   ```sh
-   go test -v -coverprofile cover.out ./...
-   go tool cover -html=cover.out -o cover.html
-   ```
-
-__Installation in local kubernetes__:
-
-1. Install [k3d](https://k3d.io/), [Kind](https://kind.sigs.k8s.io/) or similar
-2. Install [Kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) and [Helm](https://helm.sh/)
-3. Follow the steps of [Getting Started](#getting-started)
-    - Connect to cluster
-
-    - For the local mongodb, run:
-
-      `helm install mongo bitnami/mongodb`
-
-      _add --set auth.enabled=false for no authentication_
-
-    - [optional] For the local apm-server, run:
-      `helm install apm-server elastic/apm-server`
-
-    - finally, run:
-
-      `kubectl apply -f k8s/`
-<!-- LICENSE -->
-<!-- ## License -->
-
-<!-- Distributed under the MIT License. See `LICENSE` for more information. -->
-
-<!-- CONTACT -->
-## Contact
-
-Coding4u - comercial@coding4u.com.br - [website](http://coding4u.com.br)
-
-Project Link: [auth-service](https://github.com/c-4u/time-record-service)
-
-<!-- ACKNOWLEDGEMENTS -->
-<!-- ## Acknowledgements
-
-* []()
-* []()
-* []() -->
+- [Gin Web Framework](https://github.com/gin-gonic/gin)
+- [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-go)
+- [Elastic APM](https://www.elastic.co/apm)
+- [GORM](https://gorm.io/)

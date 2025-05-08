@@ -3,7 +3,7 @@ package exporter
 import (
 	"errors"
 
-	"github.com/c-4u/time-record-service/domain/entity"
+	"github.com/patricksferraz/time-record-service/domain/entity"
 )
 
 type Register string

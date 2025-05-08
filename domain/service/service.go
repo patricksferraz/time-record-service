@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/c-4u/time-record-service/domain/entity"
-	"github.com/c-4u/time-record-service/domain/entity/exporter"
-	"github.com/c-4u/time-record-service/domain/repository"
-	"github.com/c-4u/time-record-service/infrastructure/external/topic"
+	"github.com/patricksferraz/time-record-service/domain/entity"
+	"github.com/patricksferraz/time-record-service/domain/entity/exporter"
+	"github.com/patricksferraz/time-record-service/domain/repository"
+	"github.com/patricksferraz/time-record-service/infrastructure/external/topic"
 )
 
 type Service struct {

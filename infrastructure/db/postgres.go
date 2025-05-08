@@ -3,9 +3,9 @@ package db
 import (
 	"fmt"
 
-	"github.com/c-4u/time-record-service/domain/entity"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
+	"github.com/patricksferraz/time-record-service/domain/entity"
 	_ "gorm.io/driver/sqlite"
 )
 
